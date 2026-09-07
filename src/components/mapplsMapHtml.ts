@@ -44,9 +44,19 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
           zoomControl: false,
           search: false,
         });
-        map.on('load', function () {
+        var readyPosted = false;
+        function postReadyOnce() {
+          if (readyPosted) return;
+          readyPosted = true;
           post({ type: 'mapReady' });
-        });
+        }
+        if (typeof map.on === 'function') {
+          map.on('load', postReadyOnce);
+          // Fallback in case this build's 'load' event never fires.
+          setTimeout(postReadyOnce, 1500);
+        } else {
+          postReadyOnce();
+        }
       } catch (e) {
         post({ type: 'mapError', message: String((e && e.message) || e) });
       }
