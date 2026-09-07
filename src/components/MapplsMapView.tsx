@@ -67,8 +67,14 @@ export const MapplsMapView = forwardRef<MapplsMapHandle, Props>(({ initialLat, i
           setLoading(false);
           setError("Could not load the map (no connection?).");
         }}
+        onHttpError={(event) => {
+          setLoading(false);
+          setError(`Map request failed: HTTP ${event.nativeEvent.statusCode}`);
+        }}
         javaScriptEnabled
         domStorageEnabled
+        androidLayerType="hardware"
+        mixedContentMode="always"
         style={styles.webview}
       />
       {loading && !error && (

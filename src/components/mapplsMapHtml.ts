@@ -6,14 +6,46 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
   <meta name="viewport" content="initial-scale=1.0, width=device-width" />
   <style>
     html, body, #map { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+    #debug-status {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+      background: rgba(27,33,64,0.85); color: #F6F1E7; font-family: monospace;
+      font-size: 11px; padding: 4px 8px; word-break: break-all;
+    }
   </style>
+</head>
+<body>
+  <div id="debug-status">booting...</div>
+  <div id="map"></div>
   <script>
     var map;
     var userMarker, destinationMarker, routeLine;
 
+    function setDebug(text) {
+      var el = document.getElementById('debug-status');
+      if (el) el.textContent = text;
+    }
+
     function post(payload) {
+      setDebug(JSON.stringify(payload).slice(0, 300));
       if (window.ReactNativeWebView) {
         window.ReactNativeWebView.postMessage(JSON.stringify(payload));
+      }
+    }
+
+    var __origConsoleError = console.error;
+    console.error = function () {
+      __origConsoleError.apply(console, arguments);
+      try {
+        post({ type: 'mapError', message: 'console.error: ' + Array.prototype.slice.call(arguments).join(' ') });
+      } catch (e) {}
+    };
+
+    function hasWebGL() {
+      try {
+        var canvas = document.createElement('canvas');
+        return !!(canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
+      } catch (e) {
+        return false;
       }
     }
 
@@ -28,16 +60,21 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
 
     function initMap() {
       clearTimeout(window.__mapTimeout);
+      setDebug('script loaded, initializing...');
+      if (!hasWebGL()) {
+        post({ type: 'mapError', message: 'This WebView has no WebGL support - the map cannot render.' });
+        return;
+      }
       try {
         var MMI = findSdkNamespace();
         if (!MMI) {
-          var candidates = Object.keys(window).filter(function (k) {
-            return /map/i.test(k);
-          });
-          post({ type: 'mapError', message: 'SDK loaded but no Map constructor found. window keys matching "map": ' + candidates.join(', ') });
+          var candidates = Object.keys(window).filter(function (k) { return /map/i.test(k); });
+          post({ type: 'mapError', message: 'SDK loaded but no Map constructor found. window keys: ' + candidates.join(', ') });
           return;
         }
         window.__MMI = MMI;
+        var mapDiv = document.getElementById('map');
+        setDebug('creating map, container size: ' + mapDiv.offsetWidth + 'x' + mapDiv.offsetHeight);
         map = new MMI.Map('map', {
           center: [${centerLat}, ${centerLng}],
           zoom: 15,
@@ -48,11 +85,10 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
         function postReadyOnce() {
           if (readyPosted) return;
           readyPosted = true;
-          post({ type: 'mapReady' });
+          post({ type: 'mapReady', containerSize: mapDiv.offsetWidth + 'x' + mapDiv.offsetHeight });
         }
         if (typeof map.on === 'function') {
           map.on('load', postReadyOnce);
-          // Fallback in case this build's 'load' event never fires.
           setTimeout(postReadyOnce, 1500);
         } else {
           postReadyOnce();
@@ -64,7 +100,7 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
 
     function mapScriptError() {
       clearTimeout(window.__mapTimeout);
-      post({ type: 'mapError', message: 'Could not load the Mappls map script.' });
+      post({ type: 'mapError', message: 'Could not load the Mappls map script (network error).' });
     }
 
     window.onerror = function (message) {
@@ -120,9 +156,6 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
     window.addEventListener('message', function (e) { handleCommand(JSON.parse(e.data)); });
   </script>
   <script src="https://sdk.mappls.com/map/sdk/web?v=3.0&layer=vector&access_token=${apiKey}" onload="initMap()" onerror="mapScriptError()"></script>
-</head>
-<body>
-  <div id="map"></div>
 </body>
 </html>`;
 }
