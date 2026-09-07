@@ -146,10 +146,14 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
         if (userMarker && userMarker.remove) userMarker.remove();
         userMarker = new MMI.Marker({
           map: map,
-          position: [command.lat, command.lng],
+          position: [command.lng, command.lat],
           fitbounds: false,
           color: '#1B2140',
         });
+        if (typeof userMarker.setPosition === 'function') {
+          userMarker.setPosition([command.lng, command.lat]);
+        }
+        post({ type: 'debug', message: 'userMarker _lngLat after create: ' + JSON.stringify(userMarker._lngLat) + ' _pos: ' + JSON.stringify(userMarker._pos) });
         if (command.recenter) {
           map.setCenter([command.lat, command.lng]);
         }
@@ -157,10 +161,13 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
         if (destinationMarker && destinationMarker.remove) destinationMarker.remove();
         destinationMarker = new MMI.Marker({
           map: map,
-          position: [command.lat, command.lng],
+          position: [command.lng, command.lat],
           popupHtml: command.label || '',
           color: '#D9762B',
         });
+        if (typeof destinationMarker.setPosition === 'function') {
+          destinationMarker.setPosition([command.lng, command.lat]);
+        }
         map.setCenter([command.lat, command.lng]);
       } else if (command.type === 'drawRoute') {
         if (routeLine) routeLine.remove();
