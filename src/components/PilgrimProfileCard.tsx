@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { Card } from "./Card";
 import { usePilgrim } from "../pilgrim/PilgrimContext";
@@ -27,6 +28,7 @@ function DetailRow({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMa
 export function PilgrimProfileCard() {
   const { profile, clearProfile } = usePilgrim();
   const [expanded, setExpanded] = useState(false);
+  const navigation = useNavigation<any>();
 
   if (!profile) return null;
   const { pilgrim, guardian, registeredVia } = profile;
@@ -35,10 +37,17 @@ export function PilgrimProfileCard() {
     .filter(Boolean)
     .join(", ");
 
-  function confirmReset() {
-    Alert.alert("Register a different pilgrim?", "This clears the saved profile on this device only.", [
+  function confirmLogout() {
+    Alert.alert("Log out?", "You can sign back in anytime with your Aadhar number and password.", [
       { text: "Cancel", style: "cancel" },
-      { text: "Reset", style: "destructive", onPress: clearProfile },
+      {
+        text: "Log out",
+        style: "destructive",
+        onPress: async () => {
+          await clearProfile();
+          navigation.getParent()?.reset({ index: 0, routes: [{ name: "RoleSelection" }] });
+        },
+      },
     ]);
   }
 
@@ -74,8 +83,9 @@ export function PilgrimProfileCard() {
           <DetailRow icon="person-outline" label={guardian.relationToPilgrim || "Guardian"} value={guardian.name} />
           <DetailRow icon="call-outline" label="Guardian phone" value={guardian.phone} />
 
-          <TouchableOpacity onPress={confirmReset}>
-            <Text style={styles.resetLink}>Register a different pilgrim on this device</Text>
+          <TouchableOpacity style={styles.logoutButton} onPress={confirmLogout}>
+            <Ionicons name="log-out-outline" size={16} color={colors.redDeep} />
+            <Text style={styles.logoutButtonText}>Log out</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -97,5 +107,16 @@ const styles = StyleSheet.create({
   detailValue: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.ink, marginTop: 1 },
   divider: { height: 1, backgroundColor: colors.border, marginVertical: 6 },
   sectionLabel: { fontFamily: fonts.bodyMedium, fontSize: 11, color: colors.muted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 2 },
-  resetLink: { fontFamily: fonts.body, fontSize: 12, color: colors.muted2, textDecorationLine: "underline", marginTop: 6, textAlign: "center" },
+  logoutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    borderWidth: 1,
+    borderColor: "rgba(194,80,70,0.3)",
+    borderRadius: 10,
+    paddingVertical: 11,
+    marginTop: 8,
+  },
+  logoutButtonText: { fontFamily: fonts.bodyMedium, fontSize: 13.5, color: colors.redDeep },
 });
