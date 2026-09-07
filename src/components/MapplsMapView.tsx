@@ -73,6 +73,12 @@ export const MapplsMapView = forwardRef<MapplsMapHandle, Props>(({ initialLat, i
           flushPending();
         }}
         onMessage={(event) => {
+          // Any message at all proves the bridge is alive in both directions -
+          // onLoadEnd doesn't reliably fire for inline `html` sources on some
+          // Android/react-native-webview versions, so this is a second,
+          // more trustworthy trigger to flush anything still queued.
+          webviewLoaded.current = true;
+          flushPending();
           try {
             const data = JSON.parse(event.nativeEvent.data);
             if (data.type === "mapReady") {
