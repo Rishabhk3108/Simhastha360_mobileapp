@@ -1,5 +1,5 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { MapTrifold, Lifebuoy, Sparkle, UserCircle, ClipboardText } from "phosphor-react-native";
+import { MapTrifold, Lifebuoy, Sparkle, UserCircle, ClipboardText } from "../components/icons";
 import { HomeScreen } from "../screens/HomeScreen";
 import { FindHelpScreen } from "../screens/FindHelpScreen";
 import { SafetyScreen } from "../screens/SafetyScreen";

@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { StyleSheet, Text, View } from "react-native";
-import { MagnifyingGlass, MapTrifold, CloudSlash } from "phosphor-react-native";
+import { MagnifyingGlass, MapTrifold, CloudSlash } from "../components/icons";
 import { api } from "../api/client";
 import { Screen } from "../components/Screen";
 import { Card } from "../components/Card";

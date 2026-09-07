@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { Siren, UsersThree, Toilet, DropHalf, UserFocus } from "phosphor-react-native";
+import { Siren, UsersThree, Toilet, DropHalf, UserFocus } from "../components/icons";
 import { api } from "../api/client";
 import { Screen } from "../components/Screen";
 import { Card } from "../components/Card";

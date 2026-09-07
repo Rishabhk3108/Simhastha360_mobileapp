@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Sparkle, Microphone } from "phosphor-react-native";
+import { Sparkle, Microphone } from "../components/icons";
 import { api } from "../api/client";
 import { useLocation } from "../location/useLocation";
 import { colors, fonts } from "../theme";

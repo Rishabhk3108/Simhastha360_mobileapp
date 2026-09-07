@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { QrCode, UsersThree } from "phosphor-react-native";
+import { QrCode, UsersThree } from "../components/icons";
 import { Screen } from "../components/Screen";
 import { Card } from "../components/Card";
 import { useAuth } from "../auth/AuthContext";

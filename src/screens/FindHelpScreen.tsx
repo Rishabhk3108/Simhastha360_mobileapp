@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Crosshair, FirstAidKit, Drop, Info, Toilet, NavigationArrow } from "phosphor-react-native";
+import { Crosshair, FirstAidKit, Drop, Info, Toilet, NavigationArrow } from "../components/icons";
 import { api } from "../api/client";
 import { Screen } from "../components/Screen";
 import { Card } from "../components/Card";

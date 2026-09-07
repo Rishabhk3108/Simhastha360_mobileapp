@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { Alert, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
-import { WarningCircle, MapPin, Clock } from "phosphor-react-native";
+import { WarningCircle, MapPin, Clock } from "../components/icons";
 import { Screen } from "../components/Screen";
 import { Card } from "../components/Card";
 import { api } from "../api/client";
