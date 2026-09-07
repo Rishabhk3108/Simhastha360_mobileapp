@@ -148,8 +148,8 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
           map: map,
           position: [command.lat, command.lng],
           fitbounds: false,
+          color: '#1B2140',
         });
-        post({ type: 'debug', message: 'userMarker created, keys: ' + Object.keys(userMarker || {}).join(',') });
         if (command.recenter) {
           map.setCenter([command.lat, command.lng]);
         }
@@ -159,6 +159,7 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
           map: map,
           position: [command.lat, command.lng],
           popupHtml: command.label || '',
+          color: '#D9762B',
         });
         map.setCenter([command.lat, command.lng]);
       } else if (command.type === 'drawRoute') {
