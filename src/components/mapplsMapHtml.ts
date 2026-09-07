@@ -139,20 +139,21 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
     function runCommandUnsafe(command) {
       var MMI = window.__MMI;
       if (command.type === 'setUserLocation') {
-        if (userMarker) userMarker.remove();
+        if (userMarker && userMarker.remove) userMarker.remove();
         userMarker = new MMI.Marker({
           map: map,
-          position: { lat: command.lat, lng: command.lng },
+          position: [command.lat, command.lng],
           fitbounds: false,
         });
+        post({ type: 'debug', message: 'userMarker created, keys: ' + Object.keys(userMarker || {}).join(',') });
         if (command.recenter) {
           map.setCenter([command.lat, command.lng]);
         }
       } else if (command.type === 'setDestination') {
-        if (destinationMarker) destinationMarker.remove();
+        if (destinationMarker && destinationMarker.remove) destinationMarker.remove();
         destinationMarker = new MMI.Marker({
           map: map,
-          position: { lat: command.lat, lng: command.lng },
+          position: [command.lat, command.lng],
           popupHtml: command.label || '',
         });
         map.setCenter([command.lat, command.lng]);
