@@ -14,7 +14,7 @@ import {
   DMSans_700Bold,
 } from "@expo-google-fonts/dm-sans";
 import { AuthProvider, useAuth } from "./src/auth/AuthContext";
-import { RootNavigator } from "./src/navigation/RootNavigator";
+import { AppStack } from "./src/navigation/AppStack";
 import { colors } from "./src/theme";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -32,7 +32,7 @@ function Gate({ fontsReady }: { fontsReady: boolean }) {
   }, [onLayout]);
 
   if (!ready || !fontsReady) return null;
-  return <RootNavigator />;
+  return <AppStack />;
 }
 
 export default function App() {

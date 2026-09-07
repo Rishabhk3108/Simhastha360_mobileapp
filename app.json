@@ -29,7 +29,14 @@
         }
       ],
       "expo-font",
-      "expo-splash-screen"
+      "expo-splash-screen",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Simhastha 360 uses your photo library to attach a photo to your pilgrim registration.",
+          "cameraPermission": "Simhastha 360 uses your camera to take a photo for your pilgrim registration."
+        }
+      ]
     ]
   }
 }
