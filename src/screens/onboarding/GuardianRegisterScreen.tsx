@@ -15,7 +15,7 @@ export function GuardianRegisterScreen({ navigation }: Props) {
   const [guardian, setGuardian] = useState(emptyGuardianFields);
   const [pilgrim, setPilgrim] = useState(emptyPilgrimFields);
   const [submitting, setSubmitting] = useState(false);
-  const { setIdentity } = usePilgrim();
+  const { setProfile } = usePilgrim();
 
   async function submit() {
     if (!guardian.name || !guardian.phone || !guardian.aadharNumber || !guardian.relationToPilgrim) {
@@ -29,7 +29,7 @@ export function GuardianRegisterScreen({ navigation }: Props) {
     setSubmitting(true);
     try {
       const result = await registerPilgrim({ registeredVia: "guardian", pilgrim, guardian });
-      await setIdentity(result.pilgrim_id, result.name, "guardian");
+      await setProfile({ pilgrimId: result.pilgrim_id, registeredVia: "guardian", pilgrim, guardian });
       navigation.replace("Main");
     } catch (err: any) {
       if (err.code === "ECONNABORTED") {

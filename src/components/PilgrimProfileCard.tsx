@@ -1,0 +1,101 @@
+import { useState } from "react";
+import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { Card } from "./Card";
+import { usePilgrim } from "../pilgrim/PilgrimContext";
+import { colors, fonts } from "../theme";
+
+function maskAadhar(aadhar: string) {
+  if (aadhar.length < 4) return aadhar;
+  return `XXXX XXXX ${aadhar.slice(-4)}`;
+}
+
+function DetailRow({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string }) {
+  return (
+    <View style={styles.detailRow}>
+      <View style={styles.detailIconWrap}>
+        <Ionicons name={icon} size={16} color={colors.saffronDeep} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.detailLabel}>{label}</Text>
+        <Text style={styles.detailValue}>{value}</Text>
+      </View>
+    </View>
+  );
+}
+
+export function PilgrimProfileCard() {
+  const { profile, clearProfile } = usePilgrim();
+  const [expanded, setExpanded] = useState(false);
+
+  if (!profile) return null;
+  const { pilgrim, guardian, registeredVia } = profile;
+
+  const address = [pilgrim.addressLine1, pilgrim.addressLine2, pilgrim.city, pilgrim.state, pilgrim.pincode, pilgrim.country]
+    .filter(Boolean)
+    .join(", ");
+
+  function confirmReset() {
+    Alert.alert("Register a different pilgrim?", "This clears the saved profile on this device only.", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Reset", style: "destructive", onPress: clearProfile },
+    ]);
+  }
+
+  return (
+    <Card style={styles.card}>
+      <TouchableOpacity style={styles.header} onPress={() => setExpanded((e) => !e)} activeOpacity={0.8}>
+        {pilgrim.photoBase64 ? (
+          <Image source={{ uri: pilgrim.photoBase64 }} style={styles.avatar} />
+        ) : (
+          <View style={[styles.avatar, styles.avatarPlaceholder]}>
+            <Ionicons name="person" size={26} color={colors.surface} />
+          </View>
+        )}
+        <View style={{ flex: 1 }}>
+          <Text style={styles.name}>{pilgrim.name}</Text>
+          <Text style={styles.subtitle}>
+            {registeredVia === "guardian" ? "Registered by guardian" : "Pilgrim"} · Age {pilgrim.age}
+          </Text>
+        </View>
+        <Ionicons name={expanded ? "chevron-up" : "chevron-down"} size={20} color={colors.muted} />
+      </TouchableOpacity>
+
+      {expanded && (
+        <View style={styles.details}>
+          <DetailRow icon="call-outline" label="Phone" value={pilgrim.phone} />
+          <DetailRow icon="card-outline" label="Aadhar" value={maskAadhar(pilgrim.aadharNumber)} />
+          {!!pilgrim.samagraId && <DetailRow icon="document-text-outline" label="Samagra ID" value={pilgrim.samagraId} />}
+          <DetailRow icon="location-outline" label="Address" value={address} />
+          {!!pilgrim.medicalHistory && <DetailRow icon="medkit-outline" label="Medical history" value={pilgrim.medicalHistory} />}
+
+          <View style={styles.divider} />
+          <Text style={styles.sectionLabel}>Guardian / emergency contact</Text>
+          <DetailRow icon="person-outline" label={guardian.relationToPilgrim || "Guardian"} value={guardian.name} />
+          <DetailRow icon="call-outline" label="Guardian phone" value={guardian.phone} />
+
+          <TouchableOpacity onPress={confirmReset}>
+            <Text style={styles.resetLink}>Register a different pilgrim on this device</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </Card>
+  );
+}
+
+const styles = StyleSheet.create({
+  card: { padding: 14 },
+  header: { flexDirection: "row", alignItems: "center", gap: 12 },
+  avatar: { width: 52, height: 52, borderRadius: 26 },
+  avatarPlaceholder: { backgroundColor: colors.saffron, alignItems: "center", justifyContent: "center" },
+  name: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.ink },
+  subtitle: { fontFamily: fonts.body, fontSize: 12.5, color: colors.muted, marginTop: 2 },
+  details: { marginTop: 14, gap: 10 },
+  detailRow: { flexDirection: "row", gap: 10, alignItems: "flex-start" },
+  detailIconWrap: { width: 30, height: 30, borderRadius: 10, backgroundColor: colors.surfaceTint, alignItems: "center", justifyContent: "center", marginTop: 1 },
+  detailLabel: { fontFamily: fonts.body, fontSize: 11, color: colors.muted, textTransform: "uppercase", letterSpacing: 0.4 },
+  detailValue: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.ink, marginTop: 1 },
+  divider: { height: 1, backgroundColor: colors.border, marginVertical: 6 },
+  sectionLabel: { fontFamily: fonts.bodyMedium, fontSize: 11, color: colors.muted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 2 },
+  resetLink: { fontFamily: fonts.body, fontSize: 12, color: colors.muted2, textDecorationLine: "underline", marginTop: 6, textAlign: "center" },
+});

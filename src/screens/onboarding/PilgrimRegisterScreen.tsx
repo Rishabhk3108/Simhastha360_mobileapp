@@ -15,7 +15,7 @@ export function PilgrimRegisterScreen({ navigation }: Props) {
   const [pilgrim, setPilgrim] = useState(emptyPilgrimFields);
   const [guardian, setGuardian] = useState(emptyGuardianFields);
   const [submitting, setSubmitting] = useState(false);
-  const { setIdentity } = usePilgrim();
+  const { setProfile } = usePilgrim();
 
   async function submit() {
     if (!pilgrim.name || !pilgrim.phone || !pilgrim.aadharNumber || !pilgrim.age || !pilgrim.addressLine1 || !pilgrim.city || !pilgrim.state || !pilgrim.pincode) {
@@ -29,7 +29,7 @@ export function PilgrimRegisterScreen({ navigation }: Props) {
     setSubmitting(true);
     try {
       const result = await registerPilgrim({ registeredVia: "self", pilgrim, guardian });
-      await setIdentity(result.pilgrim_id, result.name, "self");
+      await setProfile({ pilgrimId: result.pilgrim_id, registeredVia: "self", pilgrim, guardian });
       navigation.replace("Main");
     } catch (err: any) {
       if (err.code === "ECONNABORTED") {

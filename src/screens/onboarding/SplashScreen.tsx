@@ -8,7 +8,7 @@ import type { OnboardingStackParamList } from "../../navigation/AppStack";
 type Props = NativeStackScreenProps<OnboardingStackParamList, "Splash">;
 
 export function SplashScreen({ navigation }: Props) {
-  const { pilgrimId } = usePilgrim();
+  const { profile } = usePilgrim();
   const sealScale = useRef(new Animated.Value(0.6)).current;
   const sealOpacity = useRef(new Animated.Value(0)).current;
   const textOpacity = useRef(new Animated.Value(0)).current;
@@ -23,11 +23,11 @@ export function SplashScreen({ navigation }: Props) {
     ]).start();
 
     const timer = setTimeout(() => {
-      navigation.replace(pilgrimId ? "Main" : "RoleSelection");
+      navigation.replace(profile ? "Main" : "RoleSelection");
     }, 2600);
 
     return () => clearTimeout(timer);
-  }, [navigation, pilgrimId, sealScale, sealOpacity, textOpacity]);
+  }, [navigation, profile, sealScale, sealOpacity, textOpacity]);
 
   return (
     <View style={styles.container}>

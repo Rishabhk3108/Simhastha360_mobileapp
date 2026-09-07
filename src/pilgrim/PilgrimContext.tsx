@@ -1,41 +1,44 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api } from "../api/client";
+import type { GuardianFields, PilgrimFields } from "../screens/onboarding/types";
+
+export interface PilgrimProfile {
+  pilgrimId: number;
+  registeredVia: "self" | "guardian";
+  pilgrim: PilgrimFields;
+  guardian: GuardianFields;
+}
 
 interface PilgrimIdentity {
-  pilgrimId: string | null;
-  name: string | null;
-  registeredVia: "self" | "guardian" | null;
+  profile: PilgrimProfile | null;
   ready: boolean;
-  setIdentity: (pilgrimId: number, name: string, registeredVia: "self" | "guardian") => Promise<void>;
-  clearIdentity: () => Promise<void>;
+  setProfile: (profile: PilgrimProfile) => Promise<void>;
+  clearProfile: () => Promise<void>;
 }
+
+const STORAGE_KEY = "s360_pilgrim_profile";
 
 const PilgrimContext = createContext<PilgrimIdentity | null>(null);
 
 export function PilgrimProvider({ children }: { children: ReactNode }) {
-  const [pilgrimId, setPilgrimId] = useState<string | null>(null);
-  const [name, setName] = useState<string | null>(null);
-  const [registeredVia, setRegisteredVia] = useState<"self" | "guardian" | null>(null);
+  const [profile, setProfileState] = useState<PilgrimProfile | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const [storedId, storedName, storedVia] = await Promise.all([
-        AsyncStorage.getItem("s360_pilgrim_id"),
-        AsyncStorage.getItem("s360_pilgrim_name"),
-        AsyncStorage.getItem("s360_pilgrim_registered_via"),
-      ]);
+      const stored = await AsyncStorage.getItem(STORAGE_KEY);
+      const parsed: PilgrimProfile | null = stored ? JSON.parse(stored) : null;
 
-      if (storedId) {
+      if (parsed) {
         try {
-          await api.get(`/pilgrims/${storedId}`);
+          await api.get(`/pilgrims/${parsed.pilgrimId}`);
         } catch (err: any) {
           if (err.response?.status === 404) {
             // The device remembers a registration the backend no longer has
             // (e.g. the database was reset independently of this phone) -
-            // clear the stale local flag so onboarding runs again.
-            await AsyncStorage.multiRemove(["s360_pilgrim_id", "s360_pilgrim_name", "s360_pilgrim_registered_via"]);
+            // clear the stale local profile so onboarding runs again.
+            await AsyncStorage.removeItem(STORAGE_KEY);
             setReady(true);
             return;
           }
@@ -44,36 +47,22 @@ export function PilgrimProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      setPilgrimId(storedId);
-      setName(storedName);
-      setRegisteredVia(storedVia as "self" | "guardian" | null);
+      setProfileState(parsed);
       setReady(true);
     })();
   }, []);
 
-  async function setIdentity(newPilgrimId: number, newName: string, newRegisteredVia: "self" | "guardian") {
-    await AsyncStorage.multiSet([
-      ["s360_pilgrim_id", String(newPilgrimId)],
-      ["s360_pilgrim_name", newName],
-      ["s360_pilgrim_registered_via", newRegisteredVia],
-    ]);
-    setPilgrimId(String(newPilgrimId));
-    setName(newName);
-    setRegisteredVia(newRegisteredVia);
+  async function setProfile(newProfile: PilgrimProfile) {
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newProfile));
+    setProfileState(newProfile);
   }
 
-  async function clearIdentity() {
-    await AsyncStorage.multiRemove(["s360_pilgrim_id", "s360_pilgrim_name", "s360_pilgrim_registered_via"]);
-    setPilgrimId(null);
-    setName(null);
-    setRegisteredVia(null);
+  async function clearProfile() {
+    await AsyncStorage.removeItem(STORAGE_KEY);
+    setProfileState(null);
   }
 
-  return (
-    <PilgrimContext.Provider value={{ pilgrimId, name, registeredVia, ready, setIdentity, clearIdentity }}>
-      {children}
-    </PilgrimContext.Provider>
-  );
+  return <PilgrimContext.Provider value={{ profile, ready, setProfile, clearProfile }}>{children}</PilgrimContext.Provider>;
 }
 
 export function usePilgrim() {

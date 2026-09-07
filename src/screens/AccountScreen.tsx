@@ -1,48 +1,14 @@
 import { useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 import { QrCode, UsersThree } from "../components/icons";
 import { Screen } from "../components/Screen";
 import { Card } from "../components/Card";
+import { PilgrimProfileCard } from "../components/PilgrimProfileCard";
 import { useAuth } from "../auth/AuthContext";
-import { usePilgrim } from "../pilgrim/PilgrimContext";
 import { api } from "../api/client";
 import { getDeviceId } from "../device/deviceId";
 import { colors, fonts } from "../theme";
-
-function PilgrimIdentityCard() {
-  const { name, registeredVia, clearIdentity } = usePilgrim();
-  const navigation = useNavigation<any>();
-
-  async function resetRegistration() {
-    Alert.alert("Reset registration?", "This clears your registered pilgrim details on this device.", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Reset",
-        style: "destructive",
-        onPress: async () => {
-          await clearIdentity();
-          navigation.getParent()?.reset({ index: 0, routes: [{ name: "RoleSelection" }] });
-        },
-      },
-    ]);
-  }
-
-  if (!name) return null;
-
-  return (
-    <Card>
-      <View style={styles.titleRow}>
-        <View style={styles.registeredDot} />
-        <Text style={styles.cardTitle}>Registered as {name}</Text>
-      </View>
-      <Text style={styles.muted}>{registeredVia === "guardian" ? "Registered by a guardian" : "Registered as pilgrim"}</Text>
-      <TouchableOpacity style={styles.secondaryButton} onPress={resetRegistration}>
-        <Text style={styles.secondaryButtonText}>Not you? Reset registration</Text>
-      </TouchableOpacity>
-    </Card>
-  );
-}
 
 const SKILLS = ["first aid", "crowd management", "translation", "sanitation", "general support"];
 
@@ -64,14 +30,13 @@ function LoginForm() {
   }
 
   return (
-    <Card>
-      <Text style={styles.cardTitle}>Volunteer / Field Team sign in</Text>
+    <>
       <TextInput style={styles.input} placeholder="Phone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
       <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
       <TouchableOpacity style={styles.primaryButton} onPress={handleLogin} disabled={loading}>
         <Text style={styles.primaryButtonText}>{loading ? "Signing in..." : "Sign in"}</Text>
       </TouchableOpacity>
-    </Card>
+    </>
   );
 }
 
@@ -96,17 +61,11 @@ function VolunteerRegisterForm() {
   }
 
   if (submitted) {
-    return (
-      <Card>
-        <Text style={styles.cardTitle}>Application received</Text>
-        <Text style={styles.muted}>Status: Pending Review. Sign in above once an admin approves you.</Text>
-      </Card>
-    );
+    return <Text style={styles.muted}>Application received. Status: Pending Review. Sign in above once an admin approves you.</Text>;
   }
 
   return (
-    <Card>
-      <Text style={styles.cardTitle}>Register as a volunteer</Text>
+    <>
       <TextInput style={styles.input} placeholder="Name" value={name} onChangeText={setName} />
       <TextInput style={styles.input} placeholder="Phone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
       <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
@@ -120,6 +79,51 @@ function VolunteerRegisterForm() {
       <TouchableOpacity style={styles.primaryButton} onPress={submit}>
         <Text style={styles.primaryButtonText}>Submit application</Text>
       </TouchableOpacity>
+    </>
+  );
+}
+
+function VolunteerAccessSection() {
+  const { token, role, name, logout } = useAuth();
+  const [expanded, setExpanded] = useState(false);
+  const [mode, setMode] = useState<"login" | "register">("login");
+
+  if (token) {
+    return (
+      <Card>
+        <View style={styles.titleRow}>
+          <Ionicons name="shield-checkmark-outline" size={18} color={colors.teal} />
+          <Text style={styles.cardTitle}>{name}</Text>
+        </View>
+        <Text style={styles.muted}>Signed in as {role?.replace("_", " ")}</Text>
+        <TouchableOpacity style={styles.secondaryButton} onPress={logout}>
+          <Text style={styles.secondaryButtonText}>Log out</Text>
+        </TouchableOpacity>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <TouchableOpacity style={styles.header} onPress={() => setExpanded((e) => !e)} activeOpacity={0.8}>
+        <Ionicons name="shield-outline" size={18} color={colors.muted} />
+        <Text style={[styles.cardTitle, styles.headerTitle]}>Volunteer / Field Team access</Text>
+        <Ionicons name={expanded ? "chevron-up" : "chevron-down"} size={18} color={colors.muted} />
+      </TouchableOpacity>
+
+      {expanded && (
+        <View style={{ marginTop: 14 }}>
+          <View style={styles.tabRow}>
+            <TouchableOpacity style={[styles.tabButton, mode === "login" && styles.tabButtonActive]} onPress={() => setMode("login")}>
+              <Text style={mode === "login" ? styles.tabTextActive : styles.tabText}>Sign in</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.tabButton, mode === "register" && styles.tabButtonActive]} onPress={() => setMode("register")}>
+              <Text style={mode === "register" ? styles.tabTextActive : styles.tabText}>Register as Volunteer</Text>
+            </TouchableOpacity>
+          </View>
+          {mode === "login" ? <LoginForm /> : <VolunteerRegisterForm />}
+        </View>
+      )}
     </Card>
   );
 }
@@ -209,37 +213,12 @@ function FamilyGroupSection() {
 }
 
 export function AccountScreen() {
-  const { token, role, name, logout } = useAuth();
-  const [mode, setMode] = useState<"login" | "register">("login");
-
   return (
     <Screen title="Account">
-      <PilgrimIdentityCard />
-
-      {token ? (
-        <Card>
-          <Text style={styles.cardTitle}>{name}</Text>
-          <Text style={styles.muted}>Role: {role}</Text>
-          <TouchableOpacity style={styles.secondaryButton} onPress={logout}>
-            <Text style={styles.secondaryButtonText}>Log out</Text>
-          </TouchableOpacity>
-        </Card>
-      ) : (
-        <>
-          <View style={styles.tabRow}>
-            <TouchableOpacity style={[styles.tabButton, mode === "login" && styles.tabButtonActive]} onPress={() => setMode("login")}>
-              <Text style={mode === "login" ? styles.tabTextActive : styles.tabText}>Sign in</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.tabButton, mode === "register" && styles.tabButtonActive]} onPress={() => setMode("register")}>
-              <Text style={mode === "register" ? styles.tabTextActive : styles.tabText}>Register as Volunteer</Text>
-            </TouchableOpacity>
-          </View>
-          {mode === "login" ? <LoginForm /> : <VolunteerRegisterForm />}
-        </>
-      )}
-
+      <PilgrimProfileCard />
       <HealthCardSection />
       <FamilyGroupSection />
+      <VolunteerAccessSection />
     </Screen>
   );
 }
@@ -247,7 +226,8 @@ export function AccountScreen() {
 const styles = StyleSheet.create({
   cardTitle: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.ink },
   titleRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
-  registeredDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: colors.green },
+  header: { flexDirection: "row", alignItems: "center", gap: 10 },
+  headerTitle: { flex: 1 },
   muted: { fontFamily: fonts.body, color: colors.muted, marginTop: 6 },
   input: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 11, marginTop: 10, backgroundColor: colors.surface, fontFamily: fonts.body },
   primaryButton: { backgroundColor: colors.ink, borderRadius: 10, paddingVertical: 13, alignItems: "center", marginTop: 12 },
