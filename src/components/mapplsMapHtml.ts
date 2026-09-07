@@ -7,10 +7,6 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
   <style>
     html, body, #map { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
   </style>
-  <script src="https://apis.mappls.com/advancedmaps/api/${apiKey}/map_sdk?layer=vector&v=3.0&callback=initMap" defer async></script>
-</head>
-<body>
-  <div id="map"></div>
   <script>
     var map;
     var userMarker, destinationMarker, routeLine;
@@ -34,8 +30,13 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
           post({ type: 'mapReady' });
         });
       } catch (e) {
-        post({ type: 'mapError', message: String(e && e.message || e) });
+        post({ type: 'mapError', message: String((e && e.message) || e) });
       }
+    }
+
+    function mapScriptError() {
+      clearTimeout(window.__mapTimeout);
+      post({ type: 'mapError', message: 'Could not load the Mappls map script.' });
     }
 
     window.onerror = function (message) {
@@ -89,6 +90,10 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
     document.addEventListener('message', function (e) { handleCommand(JSON.parse(e.data)); });
     window.addEventListener('message', function (e) { handleCommand(JSON.parse(e.data)); });
   </script>
+  <script src="https://sdk.mappls.com/map/sdk/web?v=3.0&layer=vector&access_token=${apiKey}" onload="initMap()" onerror="mapScriptError()"></script>
+</head>
+<body>
+  <div id="map"></div>
 </body>
 </html>`;
 }
