@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { QrCode, UsersThree } from "phosphor-react-native";
 import { Screen } from "../components/Screen";
 import { Card } from "../components/Card";
 import { useAuth } from "../auth/AuthContext";
 import { api } from "../api/client";
 import { getDeviceId } from "../device/deviceId";
+import { colors, fonts } from "../theme";
 
 const SKILLS = ["first aid", "crowd management", "translation", "sanitation", "general support"];
 
@@ -27,7 +29,7 @@ function LoginForm() {
 
   return (
     <Card>
-      <Text style={styles.cardTitle}>Volunteer / Field Team Sign In</Text>
+      <Text style={styles.cardTitle}>Volunteer / Field Team sign in</Text>
       <TextInput style={styles.input} placeholder="Phone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
       <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
       <TouchableOpacity style={styles.primaryButton} onPress={handleLogin} disabled={loading}>
@@ -68,17 +70,13 @@ function VolunteerRegisterForm() {
 
   return (
     <Card>
-      <Text style={styles.cardTitle}>Register as a Volunteer</Text>
+      <Text style={styles.cardTitle}>Register as a volunteer</Text>
       <TextInput style={styles.input} placeholder="Name" value={name} onChangeText={setName} />
       <TextInput style={styles.input} placeholder="Phone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
       <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
       <View style={styles.skillRow}>
         {SKILLS.map((skill) => (
-          <TouchableOpacity
-            key={skill}
-            style={[styles.chip, skills.includes(skill) && styles.chipActive]}
-            onPress={() => toggleSkill(skill)}
-          >
+          <TouchableOpacity key={skill} style={[styles.chip, skills.includes(skill) && styles.chipActive]} onPress={() => toggleSkill(skill)}>
             <Text style={[styles.chipText, skills.includes(skill) && styles.chipTextActive]}>{skill}</Text>
           </TouchableOpacity>
         ))}
@@ -99,12 +97,7 @@ function HealthCardSection() {
   async function save() {
     try {
       const deviceId = await getDeviceId();
-      const { data } = await api.post("/health-card", {
-        device_id: deviceId,
-        name,
-        emergency_contact: contact,
-        blood_group: bloodGroup || undefined,
-      });
+      const { data } = await api.post("/health-card", { device_id: deviceId, name, emergency_contact: contact, blood_group: bloodGroup || undefined });
       setQrToken(data.qr_token);
     } catch {
       Alert.alert("Could not save", "Please try again.");
@@ -113,18 +106,17 @@ function HealthCardSection() {
 
   return (
     <Card>
-      <Text style={styles.cardTitle}>Digital Health Card (opt-in)</Text>
+      <View style={styles.titleRow}>
+        <QrCode size={16} color={colors.saffronDeep} weight="fill" />
+        <Text style={styles.cardTitle}>Digital Health Card · opt-in</Text>
+      </View>
       <TextInput style={styles.input} placeholder="Name" value={name} onChangeText={setName} />
       <TextInput style={styles.input} placeholder="Emergency contact" value={contact} onChangeText={setContact} keyboardType="phone-pad" />
       <TextInput style={styles.input} placeholder="Blood group" value={bloodGroup} onChangeText={setBloodGroup} />
       <TouchableOpacity style={styles.primaryButton} onPress={save}>
         <Text style={styles.primaryButtonText}>Save health card</Text>
       </TouchableOpacity>
-      {qrToken && (
-        <Text style={styles.muted}>
-          Saved. A medical responder can scan your code (token: {qrToken.slice(0, 10)}...) to see this summary.
-        </Text>
-      )}
+      {qrToken && <Text style={styles.muted}>Saved. A medical responder can scan your code (token: {qrToken.slice(0, 10)}...) to see this summary.</Text>}
     </Card>
   );
 }
@@ -156,7 +148,10 @@ function FamilyGroupSection() {
 
   return (
     <Card>
-      <Text style={styles.cardTitle}>Temporary Family Group</Text>
+      <View style={styles.titleRow}>
+        <UsersThree size={16} color={colors.teal} weight="fill" />
+        <Text style={styles.cardTitle}>Temporary Family Group</Text>
+      </View>
       {!groupId ? (
         <>
           <TextInput style={styles.input} placeholder="Your name" value={memberName} onChangeText={setMemberName} />
@@ -212,21 +207,22 @@ export function AccountScreen() {
 }
 
 const styles = StyleSheet.create({
-  cardTitle: { fontSize: 16, fontWeight: "700", color: "#1c2733", marginBottom: 8 },
-  muted: { color: "#667080", marginTop: 4 },
-  input: { borderWidth: 1, borderColor: "#dde2e7", borderRadius: 8, padding: 10, marginBottom: 10, backgroundColor: "white" },
-  primaryButton: { backgroundColor: "#1d5fbf", borderRadius: 8, paddingVertical: 12, alignItems: "center" },
-  primaryButtonText: { color: "white", fontWeight: "700" },
-  secondaryButton: { borderWidth: 1, borderColor: "#dde2e7", borderRadius: 8, paddingVertical: 12, alignItems: "center", marginTop: 8 },
-  secondaryButtonText: { color: "#1c2733", fontWeight: "600" },
-  skillRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 10 },
-  chip: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, borderWidth: 1, borderColor: "#dde2e7" },
-  chipActive: { backgroundColor: "#1d5fbf", borderColor: "#1d5fbf" },
-  chipText: { fontSize: 12, color: "#1c2733" },
-  chipTextActive: { color: "white" },
+  cardTitle: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.ink },
+  titleRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
+  muted: { fontFamily: fonts.body, color: colors.muted, marginTop: 6 },
+  input: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 11, marginTop: 10, backgroundColor: colors.surface, fontFamily: fonts.body },
+  primaryButton: { backgroundColor: colors.ink, borderRadius: 10, paddingVertical: 13, alignItems: "center", marginTop: 12 },
+  primaryButtonText: { fontFamily: fonts.bodyBold, color: colors.surface },
+  secondaryButton: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, paddingVertical: 13, alignItems: "center", marginTop: 12 },
+  secondaryButtonText: { fontFamily: fonts.bodyMedium, color: colors.ink },
+  skillRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 12 },
+  chip: { paddingHorizontal: 11, paddingVertical: 7, borderRadius: 999, borderWidth: 1, borderColor: colors.border },
+  chipActive: { backgroundColor: colors.ink, borderColor: colors.ink },
+  chipText: { fontFamily: fonts.body, fontSize: 12, color: colors.ink },
+  chipTextActive: { color: colors.surface },
   tabRow: { flexDirection: "row", gap: 8, marginBottom: 12 },
-  tabButton: { flex: 1, paddingVertical: 10, borderRadius: 8, backgroundColor: "white", borderWidth: 1, borderColor: "#dde2e7", alignItems: "center" },
-  tabButtonActive: { backgroundColor: "#1d5fbf", borderColor: "#1d5fbf" },
-  tabText: { color: "#1c2733", fontWeight: "600" },
-  tabTextActive: { color: "white", fontWeight: "700" },
+  tabButton: { flex: 1, paddingVertical: 11, borderRadius: 10, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: "center" },
+  tabButtonActive: { backgroundColor: colors.ink, borderColor: colors.ink },
+  tabText: { fontFamily: fonts.bodyMedium, color: colors.ink },
+  tabTextActive: { fontFamily: fonts.bodyBold, color: colors.surface },
 });

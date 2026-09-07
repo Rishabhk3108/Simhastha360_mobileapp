@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Sparkle, Microphone } from "phosphor-react-native";
 import { api } from "../api/client";
 import { useLocation } from "../location/useLocation";
+import { colors, fonts } from "../theme";
 
 interface Message {
   id: string;
@@ -22,8 +24,7 @@ export function AIAssistantScreen() {
     const text = input.trim();
     if (!text) return;
     setInput("");
-    const userMsg: Message = { id: `${Date.now()}-u`, from: "user", text };
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages((prev) => [...prev, { id: `${Date.now()}-u`, from: "user", text }]);
     setSending(true);
     try {
       const { data } = await api.post("/ai/chat", { message: text, lat: coords?.lat, lng: coords?.lng });
@@ -37,7 +38,15 @@ export function AIAssistantScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
-      <Text style={styles.title}>AI Assistant</Text>
+      <View style={styles.header}>
+        <View style={styles.avatar}>
+          <Sparkle size={18} color={colors.surface} weight="fill" />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.title}>Sahayak</Text>
+          <Text style={styles.subtitle}>Answers only from verified Simhastha data</Text>
+        </View>
+      </View>
       <FlatList
         data={messages}
         keyExtractor={(m) => m.id}
@@ -49,15 +58,9 @@ export function AIAssistantScreen() {
         )}
       />
       <View style={styles.inputRow}>
-        <TextInput
-          style={styles.input}
-          value={input}
-          onChangeText={setInput}
-          placeholder="nearest hospital?"
-          onSubmitEditing={send}
-        />
+        <TextInput style={styles.input} value={input} onChangeText={setInput} placeholder="Ask anything, or hold to speak" onSubmitEditing={send} />
         <TouchableOpacity style={styles.sendButton} onPress={send} disabled={sending}>
-          <Text style={styles.sendText}>{sending ? "..." : "Send"}</Text>
+          <Microphone size={20} color={colors.surface} weight="fill" />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -65,16 +68,18 @@ export function AIAssistantScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#f4f6f8" },
-  title: { fontSize: 22, fontWeight: "700", padding: 16, paddingBottom: 8, color: "#1c2733" },
-  list: { padding: 16, gap: 8 },
-  bubble: { borderRadius: 12, padding: 10, maxWidth: "85%" },
-  userBubble: { alignSelf: "flex-end", backgroundColor: "#1d5fbf" },
-  assistantBubble: { alignSelf: "flex-start", backgroundColor: "white", borderWidth: 1, borderColor: "#dde2e7" },
-  userText: { color: "white" },
-  assistantText: { color: "#1c2733" },
-  inputRow: { flexDirection: "row", padding: 12, gap: 8, borderTopWidth: 1, borderTopColor: "#dde2e7", backgroundColor: "white" },
-  input: { flex: 1, borderWidth: 1, borderColor: "#dde2e7", borderRadius: 8, padding: 10 },
-  sendButton: { backgroundColor: "#1d5fbf", borderRadius: 8, paddingHorizontal: 16, justifyContent: "center" },
-  sendText: { color: "white", fontWeight: "700" },
+  safe: { flex: 1, backgroundColor: colors.bg },
+  header: { flexDirection: "row", alignItems: "center", gap: 12, padding: 16, paddingBottom: 8 },
+  avatar: { width: 38, height: 38, borderRadius: 19, backgroundColor: colors.saffron, alignItems: "center", justifyContent: "center" },
+  title: { fontFamily: fonts.display, fontSize: 20, color: colors.ink },
+  subtitle: { fontFamily: fonts.body, fontSize: 12, color: colors.teal },
+  list: { padding: 16, gap: 10 },
+  bubble: { borderRadius: 20, padding: 13, maxWidth: "85%" },
+  userBubble: { alignSelf: "flex-end", backgroundColor: colors.ink, borderBottomRightRadius: 6 },
+  assistantBubble: { alignSelf: "flex-start", backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderBottomLeftRadius: 6 },
+  userText: { fontFamily: fonts.body, color: colors.surface, fontSize: 14.5, lineHeight: 21 },
+  assistantText: { fontFamily: fonts.body, color: colors.ink, fontSize: 14.5, lineHeight: 22 },
+  inputRow: { flexDirection: "row", padding: 12, gap: 10, borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.surface, alignItems: "center" },
+  input: { flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 12, fontFamily: fonts.body },
+  sendButton: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.saffron, alignItems: "center", justifyContent: "center" },
 });

@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Siren, UsersThree, Toilet, DropHalf, UserFocus } from "phosphor-react-native";
 import { api } from "../api/client";
 import { Screen } from "../components/Screen";
 import { Card } from "../components/Card";
 import { useLocation } from "../location/useLocation";
 import { getDeviceId } from "../device/deviceId";
+import { colors, fonts } from "../theme";
 
-const REPORT_TYPES: { label: string; value: string }[] = [
-  { label: "Crowded here", value: "crowded" },
-  { label: "Toilet not working", value: "toilet_not_working" },
-  { label: "Water point empty", value: "water_empty" },
+const REPORT_TYPES: { label: string; value: string; Icon: typeof UsersThree; color: string }[] = [
+  { label: "Too crowded here", value: "crowded", Icon: UsersThree, color: colors.brass },
+  { label: "Toilet not working", value: "toilet_not_working", Icon: Toilet, color: colors.saffronDeep },
+  { label: "Water point empty", value: "water_empty", Icon: DropHalf, color: colors.teal },
 ];
 
 export function SafetyScreen() {
@@ -38,13 +40,7 @@ export function SafetyScreen() {
   async function sendReport(type: string) {
     try {
       const deviceId = await getDeviceId();
-      await api.post("/reports", {
-        zone_id: parseInt(zoneId, 10),
-        type,
-        device_id: deviceId,
-        lat: coords?.lat,
-        lng: coords?.lng,
-      });
+      await api.post("/reports", { zone_id: parseInt(zoneId, 10), type, device_id: deviceId, lat: coords?.lat, lng: coords?.lng });
       Alert.alert("Thanks", "Your report has been submitted.");
     } catch {
       Alert.alert("Could not submit report", "Please try again.");
@@ -58,12 +54,7 @@ export function SafetyScreen() {
     }
     try {
       const deviceId = await getDeviceId();
-      await api.post("/lost-person", {
-        reporter_device_id: deviceId,
-        subject_name: lostName,
-        last_seen_lat: coords?.lat,
-        last_seen_lng: coords?.lng,
-      });
+      await api.post("/lost-person", { reporter_device_id: deviceId, subject_name: lostName, last_seen_lat: coords?.lat, last_seen_lng: coords?.lng });
       setLostName("");
       Alert.alert("Report received", "Help desk staff have been notified.");
     } catch {
@@ -75,45 +66,76 @@ export function SafetyScreen() {
     <Screen title="Safety">
       {locationError && <Text style={styles.muted}>{locationError}</Text>}
 
-      <Card>
-        <TouchableOpacity style={styles.sosButton} onPress={sendSOS} disabled={sending}>
-          <Text style={styles.sosText}>{sending ? "Sending..." : "SOS — Send Help"}</Text>
-        </TouchableOpacity>
-      </Card>
+      <TouchableOpacity style={styles.sosButton} onPress={sendSOS} disabled={sending} activeOpacity={0.85}>
+        <View style={styles.sosRing}>
+          <View style={styles.sosCore}>
+            <Siren size={40} color={colors.surface} weight="fill" />
+          </View>
+        </View>
+        <Text style={styles.sosText}>{sending ? "Sending..." : "SOS — Send Help"}</Text>
+      </TouchableOpacity>
 
       <Card>
-        <Text style={styles.cardTitle}>Report an issue near you</Text>
+        <Text style={styles.cardTitle}>Report what you see</Text>
         <Text style={styles.muted}>Zone ID (demo — real app resolves this from your location)</Text>
         <TextInput style={styles.input} value={zoneId} onChangeText={setZoneId} keyboardType="number-pad" />
-        <View style={styles.reportButtons}>
+        <View style={{ gap: 8 }}>
           {REPORT_TYPES.map((r) => (
             <TouchableOpacity key={r.value} style={styles.reportButton} onPress={() => sendReport(r.value)}>
+              <r.Icon size={22} color={r.color} weight="fill" />
               <Text style={styles.reportButtonText}>{r.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
+        <Text style={styles.fineprint}>One report never changes a zone — corroboration does.</Text>
       </Card>
 
       <Card>
-        <Text style={styles.cardTitle}>Report a lost person</Text>
+        <View style={styles.titleRow}>
+          <UserFocus size={16} color={colors.red} weight="fill" />
+          <Text style={styles.cardTitle}>Report a lost person</Text>
+        </View>
         <TextInput style={styles.input} placeholder="Name" value={lostName} onChangeText={setLostName} />
         <TouchableOpacity style={styles.primaryButton} onPress={submitLostPerson}>
           <Text style={styles.primaryButtonText}>Submit</Text>
         </TouchableOpacity>
+        <Text style={styles.fineprint}>Photo optional · help desk staff confirm any match.</Text>
       </Card>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  muted: { color: "#667080", marginBottom: 8 },
-  cardTitle: { fontSize: 16, fontWeight: "600", color: "#1c2733", marginBottom: 8 },
-  sosButton: { backgroundColor: "#d13c3c", borderRadius: 10, paddingVertical: 18, alignItems: "center" },
-  sosText: { color: "white", fontSize: 18, fontWeight: "700" },
-  input: { borderWidth: 1, borderColor: "#dde2e7", borderRadius: 8, padding: 10, marginBottom: 10, backgroundColor: "white" },
-  reportButtons: { gap: 8 },
-  reportButton: { backgroundColor: "#eef2f6", borderRadius: 8, paddingVertical: 10, alignItems: "center" },
-  reportButtonText: { color: "#1c2733", fontWeight: "600" },
-  primaryButton: { backgroundColor: "#1d5fbf", borderRadius: 8, paddingVertical: 12, alignItems: "center" },
-  primaryButtonText: { color: "white", fontWeight: "700" },
+  muted: { fontFamily: fonts.body, color: colors.muted, marginBottom: 8 },
+  cardTitle: { fontFamily: fonts.bodyMedium, fontSize: 16, color: colors.ink },
+  titleRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
+  sosButton: { alignItems: "center", gap: 10, paddingVertical: 8 },
+  sosRing: {
+    width: 128,
+    height: 128,
+    borderRadius: 64,
+    backgroundColor: "rgba(194,80,70,0.14)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  sosCore: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    backgroundColor: colors.red,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: colors.red,
+    shadowOpacity: 0.5,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  },
+  sosText: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.redDeep },
+  input: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 11, marginBottom: 10, backgroundColor: colors.surface, fontFamily: fonts.body },
+  reportButton: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: colors.surfaceTint, borderRadius: 14, paddingVertical: 13, paddingHorizontal: 14 },
+  reportButtonText: { fontFamily: fonts.bodyMedium, color: colors.ink, fontSize: 15 },
+  primaryButton: { backgroundColor: colors.ink, borderRadius: 12, paddingVertical: 13, alignItems: "center" },
+  primaryButtonText: { fontFamily: fonts.bodyBold, color: colors.surface },
+  fineprint: { fontFamily: fonts.body, fontSize: 12, color: colors.muted2, marginTop: 10 },
 });

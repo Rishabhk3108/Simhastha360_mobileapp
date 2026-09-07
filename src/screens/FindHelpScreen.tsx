@@ -1,11 +1,13 @@
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Crosshair, FirstAidKit, Drop, Info, Toilet, NavigationArrow } from "phosphor-react-native";
 import { api } from "../api/client";
 import { Screen } from "../components/Screen";
 import { Card } from "../components/Card";
 import { useLocation } from "../location/useLocation";
 import { haversineKm } from "../location/geo";
+import { colors, fonts } from "../theme";
 import type { Facility, FacilityType } from "../api/types";
 
 const FILTERS: { label: string; value: FacilityType | null }[] = [
@@ -15,6 +17,14 @@ const FILTERS: { label: string; value: FacilityType | null }[] = [
   { label: "Water", value: "water" },
   { label: "Help Desk", value: "help_desk" },
 ];
+
+const FACILITY_ICON: Record<FacilityType, { Icon: typeof FirstAidKit; color: string; bg: string }> = {
+  medical: { Icon: FirstAidKit, color: colors.teal, bg: colors.tealTint },
+  toilet: { Icon: Toilet, color: colors.muted, bg: "rgba(27,33,64,0.07)" },
+  water: { Icon: Drop, color: colors.teal, bg: colors.tealTint },
+  help_desk: { Icon: Info, color: colors.saffronDeep, bg: "rgba(169,114,44,0.12)" },
+  parking: { Icon: Info, color: colors.saffronDeep, bg: "rgba(169,114,44,0.12)" },
+};
 
 export function FindHelpScreen() {
   const { coords, error: locationError } = useLocation();
@@ -46,7 +56,12 @@ export function FindHelpScreen() {
     : facilities;
 
   return (
-    <Screen title="Find Help" refreshing={refreshing} onRefresh={onRefresh}>
+    <Screen title="Find help" refreshing={refreshing} onRefresh={onRefresh}>
+      <View style={styles.locationRow}>
+        <Crosshair size={14} color={colors.tealDeep} weight="fill" />
+        <Text style={styles.locationText}>My location</Text>
+      </View>
+
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
         {FILTERS.map((f) => (
           <TouchableOpacity
@@ -62,13 +77,24 @@ export function FindHelpScreen() {
       {locationError && <Text style={styles.muted}>{locationError}</Text>}
 
       <View style={{ gap: 10 }}>
-        {sorted.map((f) => (
-          <Card key={f.id}>
-            <Text style={styles.name}>{f.name}</Text>
-            <Text style={styles.muted}>{f.type.replace("_", " ")}</Text>
-            {coords && <Text style={styles.muted}>{haversineKm(coords.lat, coords.lng, f.lat, f.lng).toFixed(1)} km away</Text>}
-          </Card>
-        ))}
+        {sorted.map((f) => {
+          const { Icon, color, bg } = FACILITY_ICON[f.type];
+          return (
+            <Card key={f.id} style={styles.facilityCard}>
+              <View style={[styles.iconWrap, { backgroundColor: bg }]}>
+                <Icon size={22} color={color} weight="fill" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.name}>{f.name}</Text>
+                <Text style={styles.muted}>
+                  {f.type.replace("_", " ")}
+                  {coords ? ` · ${haversineKm(coords.lat, coords.lng, f.lat, f.lng).toFixed(1)} km away` : ""}
+                </Text>
+              </View>
+              <NavigationArrow size={20} color={colors.saffronDeep} />
+            </Card>
+          );
+        })}
         {sorted.length === 0 && <Text style={styles.muted}>No facilities found for this filter.</Text>}
       </View>
     </Screen>
@@ -76,11 +102,25 @@ export function FindHelpScreen() {
 }
 
 const styles = StyleSheet.create({
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    alignSelf: "flex-start",
+    backgroundColor: colors.tealTint,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 999,
+    marginBottom: 4,
+  },
+  locationText: { fontFamily: fonts.bodyMedium, fontSize: 12.5, color: colors.tealDeep },
   filterRow: { marginBottom: 4 },
-  chip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999, backgroundColor: "white", borderWidth: 1, borderColor: "#dde2e7", marginRight: 8 },
-  chipActive: { backgroundColor: "#1d5fbf", borderColor: "#1d5fbf" },
-  chipText: { color: "#1c2733", fontSize: 13 },
-  chipTextActive: { color: "white" },
-  name: { fontSize: 16, fontWeight: "600", color: "#1c2733" },
-  muted: { color: "#667080", marginTop: 2 },
+  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, marginRight: 8 },
+  chipActive: { backgroundColor: colors.ink, borderColor: colors.ink },
+  chipText: { fontFamily: fonts.bodyMedium, color: colors.ink, fontSize: 13 },
+  chipTextActive: { color: colors.surface },
+  facilityCard: { flexDirection: "row", alignItems: "center", gap: 14 },
+  iconWrap: { width: 46, height: 46, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+  name: { fontFamily: fonts.bodyMedium, fontSize: 15.5, color: colors.ink },
+  muted: { fontFamily: fonts.body, color: colors.muted, marginTop: 2, fontSize: 12.5 },
 });
