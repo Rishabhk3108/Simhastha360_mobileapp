@@ -1,4 +1,5 @@
 import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
 import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { colors, fonts } from "../../theme";
 import type { PilgrimFields } from "./types";
@@ -17,15 +18,24 @@ export function PilgrimFieldsSection({ values, onChange, title = "Pilgrim detail
   async function pickPhoto() {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) return;
-    const result = await ImagePicker.launchImageLibraryAsync({
+    const picked = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
-      quality: 0.4,
-      base64: true,
       allowsEditing: true,
       aspect: [1, 1],
     });
-    if (!result.canceled && result.assets[0].base64) {
-      set("photoBase64", `data:image/jpeg;base64,${result.assets[0].base64}`);
+    if (picked.canceled) return;
+
+    // Quality alone doesn't cap resolution - a phone camera photo can still be
+    // several MB even at low JPEG quality, which is slow to upload on mobile
+    // data and can exceed the backend's request time limit. Resizing down to
+    // a small fixed width keeps the payload tiny regardless of source photo size.
+    const resized = await ImageManipulator.manipulateAsync(picked.assets[0].uri, [{ resize: { width: 480 } }], {
+      compress: 0.5,
+      format: ImageManipulator.SaveFormat.JPEG,
+      base64: true,
+    });
+    if (resized.base64) {
+      set("photoBase64", `data:image/jpeg;base64,${resized.base64}`);
     }
   }
 

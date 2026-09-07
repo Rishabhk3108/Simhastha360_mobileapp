@@ -30,8 +30,16 @@ export function PilgrimRegisterScreen({ navigation }: Props) {
       const result = await registerPilgrim({ registeredVia: "self", pilgrim, guardian });
       await AsyncStorage.setItem("s360_pilgrim_id", String(result.pilgrim_id));
       navigation.replace("Main");
-    } catch {
-      Alert.alert("Could not register", "Please check your details and try again.");
+    } catch (err: any) {
+      if (err.code === "ECONNABORTED") {
+        Alert.alert("Taking too long", "The request timed out — check your connection and try again. A smaller photo helps too.");
+      } else if (err.response?.status === 422) {
+        Alert.alert("Missing or invalid details", "Please check every field is filled in correctly.");
+      } else if (!err.response) {
+        Alert.alert("No connection", "Couldn't reach the server. Check your internet connection and try again.");
+      } else {
+        Alert.alert("Could not register", "Something went wrong on the server. Please try again.");
+      }
     } finally {
       setSubmitting(false);
     }
