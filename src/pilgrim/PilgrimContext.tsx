@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { api } from "../api/client";
 
 interface PilgrimIdentity {
   pilgrimId: string | null;
@@ -25,6 +26,24 @@ export function PilgrimProvider({ children }: { children: ReactNode }) {
         AsyncStorage.getItem("s360_pilgrim_name"),
         AsyncStorage.getItem("s360_pilgrim_registered_via"),
       ]);
+
+      if (storedId) {
+        try {
+          await api.get(`/pilgrims/${storedId}`);
+        } catch (err: any) {
+          if (err.response?.status === 404) {
+            // The device remembers a registration the backend no longer has
+            // (e.g. the database was reset independently of this phone) -
+            // clear the stale local flag so onboarding runs again.
+            await AsyncStorage.multiRemove(["s360_pilgrim_id", "s360_pilgrim_name", "s360_pilgrim_registered_via"]);
+            setReady(true);
+            return;
+          }
+          // Any other failure (offline, timeout, server error) - don't force
+          // a re-registration just because we couldn't verify; fail open.
+        }
+      }
+
       setPilgrimId(storedId);
       setName(storedName);
       setRegisteredVia(storedVia as "self" | "guardian" | null);
