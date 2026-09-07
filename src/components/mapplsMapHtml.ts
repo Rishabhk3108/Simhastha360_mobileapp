@@ -22,16 +22,30 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
     }
 
     function initMap() {
-      map = new Mappls.Map('map', {
-        center: [${centerLat}, ${centerLng}],
-        zoom: 15,
-        zoomControl: false,
-        search: false,
-      });
-      map.on('load', function () {
-        post({ type: 'mapReady' });
-      });
+      clearTimeout(window.__mapTimeout);
+      try {
+        map = new Mappls.Map('map', {
+          center: [${centerLat}, ${centerLng}],
+          zoom: 15,
+          zoomControl: false,
+          search: false,
+        });
+        map.on('load', function () {
+          post({ type: 'mapReady' });
+        });
+      } catch (e) {
+        post({ type: 'mapError', message: String(e && e.message || e) });
+      }
     }
+
+    window.onerror = function (message) {
+      post({ type: 'mapError', message: String(message) });
+      return true;
+    };
+
+    window.__mapTimeout = setTimeout(function () {
+      post({ type: 'mapError', message: 'Map failed to load in time - the API key may not be active yet.' });
+    }, 10000);
 
     function handleCommand(command) {
       if (!map) return;

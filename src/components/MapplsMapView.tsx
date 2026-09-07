@@ -1,8 +1,8 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { WebView } from "react-native-webview";
 import { buildMapplsMapHtml } from "./mapplsMapHtml";
-import { colors } from "../theme";
+import { colors, fonts } from "../theme";
 
 const MAPPLS_KEY = process.env.EXPO_PUBLIC_MAPPLS_KEY ?? "";
 
@@ -22,6 +22,8 @@ interface Props {
 export const MapplsMapView = forwardRef<MapplsMapHandle, Props>(({ initialLat, initialLng, onReady }, ref) => {
   const webviewRef = useRef<WebView>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   function send(command: object) {
     webviewRef.current?.postMessage(JSON.stringify(command));
@@ -34,9 +36,16 @@ export const MapplsMapView = forwardRef<MapplsMapHandle, Props>(({ initialLat, i
     clearRoute: () => send({ type: "clearRoute" }),
   }));
 
+  function retry() {
+    setError(null);
+    setLoading(true);
+    setReloadKey((k) => k + 1);
+  }
+
   return (
     <View style={styles.container}>
       <WebView
+        key={reloadKey}
         ref={webviewRef}
         originWhitelist={["*"]}
         source={{ html: buildMapplsMapHtml(MAPPLS_KEY, initialLat, initialLng) }}
@@ -46,18 +55,33 @@ export const MapplsMapView = forwardRef<MapplsMapHandle, Props>(({ initialLat, i
             if (data.type === "mapReady") {
               setLoading(false);
               onReady?.();
+            } else if (data.type === "mapError") {
+              setLoading(false);
+              setError(data.message);
             }
           } catch {
             // ignore malformed messages
           }
         }}
+        onError={() => {
+          setLoading(false);
+          setError("Could not load the map (no connection?).");
+        }}
         javaScriptEnabled
         domStorageEnabled
         style={styles.webview}
       />
-      {loading && (
-        <View style={styles.loadingOverlay}>
+      {loading && !error && (
+        <View style={styles.overlay}>
           <ActivityIndicator color={colors.ink} size="large" />
+        </View>
+      )}
+      {error && (
+        <View style={styles.overlay}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={retry}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -67,7 +91,7 @@ export const MapplsMapView = forwardRef<MapplsMapHandle, Props>(({ initialLat, i
 const styles = StyleSheet.create({
   container: { flex: 1, borderRadius: 20, overflow: "hidden" },
   webview: { flex: 1, backgroundColor: "#EFE7D6" },
-  loadingOverlay: {
+  overlay: {
     position: "absolute",
     top: 0,
     left: 0,
@@ -76,5 +100,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#EFE7D6",
     alignItems: "center",
     justifyContent: "center",
+    padding: 24,
+    gap: 14,
   },
+  errorText: { fontFamily: fonts.body, fontSize: 13.5, color: colors.redDeep, textAlign: "center" },
+  retryButton: { backgroundColor: colors.ink, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 11 },
+  retryButtonText: { fontFamily: fonts.bodyBold, color: colors.surface, fontSize: 13.5 },
 });
