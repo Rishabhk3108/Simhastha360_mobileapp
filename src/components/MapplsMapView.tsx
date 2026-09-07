@@ -21,12 +21,29 @@ interface Props {
 
 export const MapplsMapView = forwardRef<MapplsMapHandle, Props>(({ initialLat, initialLng, onReady }, ref) => {
   const webviewRef = useRef<WebView>(null);
+  const webviewLoaded = useRef(false);
+  const pendingSends = useRef<object[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
+  // react-native-webview's postMessage can silently no-op if called before the
+  // WebView's native bridge has finished loading the page (a known gotcha,
+  // especially on Android) - this is a *different* readiness gate than the
+  // in-page JS queue (which only covers "page loaded, map object not built
+  // yet"). Queuing here on the RN side covers the earlier gap.
   function send(command: object) {
+    if (!webviewLoaded.current) {
+      pendingSends.current.push(command);
+      return;
+    }
     webviewRef.current?.postMessage(JSON.stringify(command));
+  }
+
+  function flushPending() {
+    const queued = pendingSends.current;
+    pendingSends.current = [];
+    queued.forEach((command) => webviewRef.current?.postMessage(JSON.stringify(command)));
   }
 
   useImperativeHandle(ref, () => ({
@@ -37,6 +54,8 @@ export const MapplsMapView = forwardRef<MapplsMapHandle, Props>(({ initialLat, i
   }));
 
   function retry() {
+    webviewLoaded.current = false;
+    pendingSends.current = [];
     setError(null);
     setLoading(true);
     setReloadKey((k) => k + 1);
@@ -49,6 +68,10 @@ export const MapplsMapView = forwardRef<MapplsMapHandle, Props>(({ initialLat, i
         ref={webviewRef}
         originWhitelist={["*"]}
         source={{ html: buildMapplsMapHtml(MAPPLS_KEY, initialLat, initialLng) }}
+        onLoadEnd={() => {
+          webviewLoaded.current = true;
+          flushPending();
+        }}
         onMessage={(event) => {
           try {
             const data = JSON.parse(event.nativeEvent.data);
