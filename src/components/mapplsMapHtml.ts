@@ -17,10 +17,28 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
       }
     }
 
+    function findSdkNamespace() {
+      // Mappls' own docs inconsistently show both "Mappls.Map" and lowercase
+      // "mappls.search" - rather than guess again, check both and report
+      // exactly what's on window if neither has a usable Map constructor.
+      if (typeof window.Mappls !== 'undefined' && window.Mappls.Map) return window.Mappls;
+      if (typeof window.mappls !== 'undefined' && window.mappls.Map) return window.mappls;
+      return null;
+    }
+
     function initMap() {
       clearTimeout(window.__mapTimeout);
       try {
-        map = new Mappls.Map('map', {
+        var MMI = findSdkNamespace();
+        if (!MMI) {
+          var candidates = Object.keys(window).filter(function (k) {
+            return /map/i.test(k);
+          });
+          post({ type: 'mapError', message: 'SDK loaded but no Map constructor found. window keys matching "map": ' + candidates.join(', ') });
+          return;
+        }
+        window.__MMI = MMI;
+        map = new MMI.Map('map', {
           center: [${centerLat}, ${centerLng}],
           zoom: 15,
           zoomControl: false,
@@ -49,10 +67,11 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
     }, 10000);
 
     function handleCommand(command) {
-      if (!map) return;
+      if (!map || !window.__MMI) return;
+      var MMI = window.__MMI;
       if (command.type === 'setUserLocation') {
         if (userMarker) userMarker.remove();
-        userMarker = new Mappls.Marker({
+        userMarker = new MMI.Marker({
           map: map,
           position: { lat: command.lat, lng: command.lng },
           fitbounds: false,
@@ -63,7 +82,7 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
         }
       } else if (command.type === 'setDestination') {
         if (destinationMarker) destinationMarker.remove();
-        destinationMarker = new Mappls.Marker({
+        destinationMarker = new MMI.Marker({
           map: map,
           position: { lat: command.lat, lng: command.lng },
           popupHtml: command.label || '',
@@ -71,7 +90,7 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
         map.setCenter([command.lat, command.lng]);
       } else if (command.type === 'drawRoute') {
         if (routeLine) routeLine.remove();
-        routeLine = new Mappls.Polyline({
+        routeLine = new MMI.Polyline({
           map: map,
           path: command.coordinates,
           strokeColor: '#1B2140',
