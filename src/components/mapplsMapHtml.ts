@@ -7,9 +7,10 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
   <style>
     html, body, #map { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
     #debug-status {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
-      background: rgba(27,33,64,0.85); color: #F6F1E7; font-family: monospace;
-      font-size: 11px; padding: 4px 8px; word-break: break-all;
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
+      background: rgba(27,33,64,0.92); color: #F6F1E7; font-family: monospace;
+      font-size: 11px; padding: 8px; word-break: break-all;
+      max-height: 40%; overflow-y: auto;
     }
   </style>
 </head>
@@ -22,13 +23,16 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
     var mapIsReady = false;
     var pendingCommands = [];
 
+    var debugLog = [];
     function setDebug(text) {
+      debugLog.push(text);
+      if (debugLog.length > 8) debugLog.shift();
       var el = document.getElementById('debug-status');
-      if (el) el.textContent = text;
+      if (el) el.textContent = debugLog.join('\\n---\\n');
     }
 
     function post(payload) {
-      setDebug(JSON.stringify(payload).slice(0, 300));
+      setDebug(JSON.stringify(payload));
       if (window.ReactNativeWebView) {
         window.ReactNativeWebView.postMessage(JSON.stringify(payload));
       }
