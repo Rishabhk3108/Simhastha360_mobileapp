@@ -20,6 +20,14 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Simhastha 360 uses your location to find nearby help and to route responders to you during an SOS."
+        }
+      ]
+    ]
   }
 }
