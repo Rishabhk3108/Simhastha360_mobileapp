@@ -1,13 +1,14 @@
 import { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { colors, fonts } from "../../theme";
+import { usePilgrim } from "../../pilgrim/PilgrimContext";
 import type { OnboardingStackParamList } from "../../navigation/AppStack";
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, "Splash">;
 
 export function SplashScreen({ navigation }: Props) {
+  const { pilgrimId } = usePilgrim();
   const sealScale = useRef(new Animated.Value(0.6)).current;
   const sealOpacity = useRef(new Animated.Value(0)).current;
   const textOpacity = useRef(new Animated.Value(0)).current;
@@ -21,13 +22,12 @@ export function SplashScreen({ navigation }: Props) {
       Animated.timing(textOpacity, { toValue: 1, duration: 600, useNativeDriver: true }),
     ]).start();
 
-    const timer = setTimeout(async () => {
-      const pilgrimId = await AsyncStorage.getItem("s360_pilgrim_id");
+    const timer = setTimeout(() => {
       navigation.replace(pilgrimId ? "Main" : "RoleSelection");
     }, 2600);
 
     return () => clearTimeout(timer);
-  }, [navigation, sealScale, sealOpacity, textOpacity]);
+  }, [navigation, pilgrimId, sealScale, sealOpacity, textOpacity]);
 
   return (
     <View style={styles.container}>

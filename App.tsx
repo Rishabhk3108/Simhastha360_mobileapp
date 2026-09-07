@@ -14,13 +14,16 @@ import {
   DMSans_700Bold,
 } from "@expo-google-fonts/dm-sans";
 import { AuthProvider, useAuth } from "./src/auth/AuthContext";
+import { PilgrimProvider, usePilgrim } from "./src/pilgrim/PilgrimContext";
 import { AppStack } from "./src/navigation/AppStack";
 import { colors } from "./src/theme";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function Gate({ fontsReady }: { fontsReady: boolean }) {
-  const { ready } = useAuth();
+  const { ready: authReady } = useAuth();
+  const { ready: pilgrimReady } = usePilgrim();
+  const ready = authReady && pilgrimReady;
   const onLayout = useCallback(async () => {
     if (ready && fontsReady) {
       await SplashScreen.hideAsync();
@@ -45,10 +48,12 @@ export default function App() {
     <SafeAreaProvider>
       <View style={{ flex: 1, backgroundColor: colors.bg }}>
         <AuthProvider>
-          <NavigationContainer>
-            <Gate fontsReady={fontsReady} />
-            <StatusBar style="dark" />
-          </NavigationContainer>
+          <PilgrimProvider>
+            <NavigationContainer>
+              <Gate fontsReady={fontsReady} />
+              <StatusBar style="dark" />
+            </NavigationContainer>
+          </PilgrimProvider>
         </AuthProvider>
       </View>
     </SafeAreaProvider>

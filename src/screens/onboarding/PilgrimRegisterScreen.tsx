@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { PilgrimFieldsSection } from "./PilgrimFieldsSection";
 import { GuardianFieldsSection } from "./GuardianFieldsSection";
 import { emptyGuardianFields, emptyPilgrimFields } from "./types";
 import { registerPilgrim } from "../../api/pilgrims";
+import { usePilgrim } from "../../pilgrim/PilgrimContext";
 import { colors, fonts } from "../../theme";
 import type { OnboardingStackParamList } from "../../navigation/AppStack";
 
@@ -15,6 +15,7 @@ export function PilgrimRegisterScreen({ navigation }: Props) {
   const [pilgrim, setPilgrim] = useState(emptyPilgrimFields);
   const [guardian, setGuardian] = useState(emptyGuardianFields);
   const [submitting, setSubmitting] = useState(false);
+  const { setIdentity } = usePilgrim();
 
   async function submit() {
     if (!pilgrim.name || !pilgrim.phone || !pilgrim.aadharNumber || !pilgrim.age || !pilgrim.addressLine1 || !pilgrim.city || !pilgrim.state || !pilgrim.pincode) {
@@ -28,7 +29,7 @@ export function PilgrimRegisterScreen({ navigation }: Props) {
     setSubmitting(true);
     try {
       const result = await registerPilgrim({ registeredVia: "self", pilgrim, guardian });
-      await AsyncStorage.setItem("s360_pilgrim_id", String(result.pilgrim_id));
+      await setIdentity(result.pilgrim_id, result.name, "self");
       navigation.replace("Main");
     } catch (err: any) {
       if (err.code === "ECONNABORTED") {

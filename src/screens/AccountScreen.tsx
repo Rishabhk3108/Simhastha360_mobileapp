@@ -1,12 +1,48 @@
 import { useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { QrCode, UsersThree } from "../components/icons";
 import { Screen } from "../components/Screen";
 import { Card } from "../components/Card";
 import { useAuth } from "../auth/AuthContext";
+import { usePilgrim } from "../pilgrim/PilgrimContext";
 import { api } from "../api/client";
 import { getDeviceId } from "../device/deviceId";
 import { colors, fonts } from "../theme";
+
+function PilgrimIdentityCard() {
+  const { name, registeredVia, clearIdentity } = usePilgrim();
+  const navigation = useNavigation<any>();
+
+  async function resetRegistration() {
+    Alert.alert("Reset registration?", "This clears your registered pilgrim details on this device.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Reset",
+        style: "destructive",
+        onPress: async () => {
+          await clearIdentity();
+          navigation.getParent()?.reset({ index: 0, routes: [{ name: "RoleSelection" }] });
+        },
+      },
+    ]);
+  }
+
+  if (!name) return null;
+
+  return (
+    <Card>
+      <View style={styles.titleRow}>
+        <View style={styles.registeredDot} />
+        <Text style={styles.cardTitle}>Registered as {name}</Text>
+      </View>
+      <Text style={styles.muted}>{registeredVia === "guardian" ? "Registered by a guardian" : "Registered as pilgrim"}</Text>
+      <TouchableOpacity style={styles.secondaryButton} onPress={resetRegistration}>
+        <Text style={styles.secondaryButtonText}>Not you? Reset registration</Text>
+      </TouchableOpacity>
+    </Card>
+  );
+}
 
 const SKILLS = ["first aid", "crowd management", "translation", "sanitation", "general support"];
 
@@ -178,6 +214,8 @@ export function AccountScreen() {
 
   return (
     <Screen title="Account">
+      <PilgrimIdentityCard />
+
       {token ? (
         <Card>
           <Text style={styles.cardTitle}>{name}</Text>
@@ -209,6 +247,7 @@ export function AccountScreen() {
 const styles = StyleSheet.create({
   cardTitle: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.ink },
   titleRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
+  registeredDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: colors.green },
   muted: { fontFamily: fonts.body, color: colors.muted, marginTop: 6 },
   input: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 11, marginTop: 10, backgroundColor: colors.surface, fontFamily: fonts.body },
   primaryButton: { backgroundColor: colors.ink, borderRadius: 10, paddingVertical: 13, alignItems: "center", marginTop: 12 },
