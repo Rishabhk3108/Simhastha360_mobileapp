@@ -1,6 +1,8 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { SplashScreen } from "../screens/onboarding/SplashScreen";
 import { RoleSelectionScreen } from "../screens/onboarding/RoleSelectionScreen";
+import { AccountCheckScreen } from "../screens/onboarding/AccountCheckScreen";
+import { SignInScreen } from "../screens/onboarding/SignInScreen";
 import { PilgrimRegisterScreen } from "../screens/onboarding/PilgrimRegisterScreen";
 import { GuardianRegisterScreen } from "../screens/onboarding/GuardianRegisterScreen";
 import { RootNavigator } from "./RootNavigator";
@@ -8,6 +10,8 @@ import { RootNavigator } from "./RootNavigator";
 export type OnboardingStackParamList = {
   Splash: undefined;
   RoleSelection: undefined;
+  AccountCheck: { role: "pilgrim" | "guardian" };
+  SignIn: undefined;
   PilgrimRegister: undefined;
   GuardianRegister: undefined;
   Main: undefined;
@@ -20,6 +24,8 @@ export function AppStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Splash">
       <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="RoleSelection" component={RoleSelectionScreen} />
+      <Stack.Screen name="AccountCheck" component={AccountCheckScreen} />
+      <Stack.Screen name="SignIn" component={SignInScreen} />
       <Stack.Screen name="PilgrimRegister" component={PilgrimRegisterScreen} />
       <Stack.Screen name="GuardianRegister" component={GuardianRegisterScreen} />
       <Stack.Screen name="Main" component={RootNavigator} />

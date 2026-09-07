@@ -14,6 +14,7 @@ type Props = NativeStackScreenProps<OnboardingStackParamList, "GuardianRegister"
 export function GuardianRegisterScreen({ navigation }: Props) {
   const [guardian, setGuardian] = useState(emptyGuardianFields);
   const [pilgrim, setPilgrim] = useState(emptyPilgrimFields);
+  const [passwordValid, setPasswordValid] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { setProfile } = usePilgrim();
 
@@ -26,6 +27,10 @@ export function GuardianRegisterScreen({ navigation }: Props) {
       Alert.alert("Missing pilgrim details", "Please fill in the pilgrim's name, phone, Aadhar number, age, and address.");
       return;
     }
+    if (!passwordValid) {
+      Alert.alert("Password required", "Choose a password of at least 8 characters for the pilgrim, and confirm it.");
+      return;
+    }
     setSubmitting(true);
     try {
       const result = await registerPilgrim({ registeredVia: "guardian", pilgrim, guardian });
@@ -34,6 +39,8 @@ export function GuardianRegisterScreen({ navigation }: Props) {
     } catch (err: any) {
       if (err.code === "ECONNABORTED") {
         Alert.alert("Taking too long", "The request timed out — check your connection and try again. A smaller photo helps too.");
+      } else if (err.response?.status === 409) {
+        Alert.alert("Account already exists", "An account with this Aadhar number already exists. Please sign in instead.");
       } else if (err.response?.status === 422) {
         Alert.alert("Missing or invalid details", "Please check every field is filled in correctly.");
       } else if (!err.response) {
@@ -53,7 +60,7 @@ export function GuardianRegisterScreen({ navigation }: Props) {
         <Text style={styles.subtitle}>Your details, then the pilgrim you're registering on behalf of.</Text>
 
         <GuardianFieldsSection values={guardian} onChange={setGuardian} title="Your details" />
-        <PilgrimFieldsSection values={pilgrim} onChange={setPilgrim} title="Pilgrim's details" />
+        <PilgrimFieldsSection values={pilgrim} onChange={setPilgrim} onPasswordValidityChange={setPasswordValid} title="Pilgrim's details" />
 
         <TouchableOpacity style={styles.submitButton} onPress={submit} disabled={submitting}>
           <Text style={styles.submitButtonText}>{submitting ? "Registering..." : "Complete registration"}</Text>

@@ -14,12 +14,17 @@ type Props = NativeStackScreenProps<OnboardingStackParamList, "PilgrimRegister">
 export function PilgrimRegisterScreen({ navigation }: Props) {
   const [pilgrim, setPilgrim] = useState(emptyPilgrimFields);
   const [guardian, setGuardian] = useState(emptyGuardianFields);
+  const [passwordValid, setPasswordValid] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { setProfile } = usePilgrim();
 
   async function submit() {
     if (!pilgrim.name || !pilgrim.phone || !pilgrim.aadharNumber || !pilgrim.age || !pilgrim.addressLine1 || !pilgrim.city || !pilgrim.state || !pilgrim.pincode) {
       Alert.alert("Missing details", "Please fill in your name, phone, Aadhar number, age, and address.");
+      return;
+    }
+    if (!passwordValid) {
+      Alert.alert("Password required", "Choose a password of at least 8 characters, and confirm it.");
       return;
     }
     if (!guardian.name || !guardian.phone || !guardian.aadharNumber || !guardian.relationToPilgrim) {
@@ -34,6 +39,8 @@ export function PilgrimRegisterScreen({ navigation }: Props) {
     } catch (err: any) {
       if (err.code === "ECONNABORTED") {
         Alert.alert("Taking too long", "The request timed out — check your connection and try again. A smaller photo helps too.");
+      } else if (err.response?.status === 409) {
+        Alert.alert("Account already exists", "An account with this Aadhar number already exists. Please sign in instead.");
       } else if (err.response?.status === 422) {
         Alert.alert("Missing or invalid details", "Please check every field is filled in correctly.");
       } else if (!err.response) {
@@ -52,7 +59,7 @@ export function PilgrimRegisterScreen({ navigation }: Props) {
         <Text style={styles.title}>Register as Pilgrim</Text>
         <Text style={styles.subtitle}>Your details, plus a guardian we can contact in an emergency.</Text>
 
-        <PilgrimFieldsSection values={pilgrim} onChange={setPilgrim} title="Your details" />
+        <PilgrimFieldsSection values={pilgrim} onChange={setPilgrim} onPasswordValidityChange={setPasswordValid} title="Your details" />
         <GuardianFieldsSection values={guardian} onChange={setGuardian} title="Your guardian's details" />
 
         <TouchableOpacity style={styles.submitButton} onPress={submit} disabled={submitting}>

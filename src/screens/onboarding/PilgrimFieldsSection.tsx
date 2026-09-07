@@ -1,19 +1,35 @@
+import { useEffect, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { colors, fonts } from "../../theme";
+import { PasswordStrengthMeter } from "../../components/PasswordStrengthMeter";
 import type { PilgrimFields } from "./types";
 
 interface Props {
   values: PilgrimFields;
   onChange: (values: PilgrimFields) => void;
+  onPasswordValidityChange?: (valid: boolean) => void;
   title?: string;
 }
 
-export function PilgrimFieldsSection({ values, onChange, title = "Pilgrim details" }: Props) {
+const MIN_PASSWORD_LENGTH = 8;
+
+export function PilgrimFieldsSection({ values, onChange, onPasswordValidityChange, title = "Pilgrim details" }: Props) {
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   function set<K extends keyof PilgrimFields>(key: K, value: PilgrimFields[K]) {
     onChange({ ...values, [key]: value });
   }
+
+  const passwordLongEnough = values.password.length >= MIN_PASSWORD_LENGTH;
+  const passwordsMatch = confirmPassword.length > 0 && values.password === confirmPassword;
+  const showMismatch = confirmPassword.length > 0 && !passwordsMatch;
+
+  useEffect(() => {
+    onPasswordValidityChange?.(passwordLongEnough && passwordsMatch);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [passwordLongEnough, passwordsMatch]);
 
   async function pickPhoto() {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -57,6 +73,11 @@ export function PilgrimFieldsSection({ values, onChange, title = "Pilgrim detail
       <TextInput style={styles.input} placeholder="Aadhar number" value={values.aadharNumber} onChangeText={(v) => set("aadharNumber", v)} keyboardType="number-pad" maxLength={12} />
       <TextInput style={styles.input} placeholder="Samagra ID (optional)" value={values.samagraId} onChangeText={(v) => set("samagraId", v)} />
 
+      <TextInput style={styles.input} placeholder="Password" value={values.password} onChangeText={(v) => set("password", v)} secureTextEntry />
+      <PasswordStrengthMeter password={values.password} />
+      <TextInput style={styles.input} placeholder="Confirm password" value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry />
+      {showMismatch && <Text style={styles.errorText}>Passwords don't match.</Text>}
+
       <Text style={styles.subTitle}>Address</Text>
       <TextInput style={styles.input} placeholder="Address line 1" value={values.addressLine1} onChangeText={(v) => set("addressLine1", v)} />
       <TextInput style={styles.input} placeholder="Address line 2 (optional)" value={values.addressLine2} onChangeText={(v) => set("addressLine2", v)} />
@@ -83,6 +104,7 @@ export function PilgrimFieldsSection({ values, onChange, title = "Pilgrim detail
 const styles = StyleSheet.create({
   sectionTitle: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.ink, marginTop: 6 },
   subTitle: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.muted2, marginTop: 4 },
+  errorText: { fontFamily: fonts.body, fontSize: 12, color: colors.redDeep, marginTop: -6 },
   input: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 11, backgroundColor: colors.surface, fontFamily: fonts.body },
   multiline: { minHeight: 80, textAlignVertical: "top" },
   row: { flexDirection: "row", gap: 8 },

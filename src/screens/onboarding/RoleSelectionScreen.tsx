@@ -17,7 +17,7 @@ export function RoleSelectionScreen({ navigation }: Props) {
         <Text style={styles.title}>Welcome to Simhastha 360</Text>
         <Text style={styles.subtitle}>Tell us who you are so we can set you up correctly.</Text>
 
-        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("PilgrimRegister")}>
+        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("AccountCheck", { role: "pilgrim" })}>
           <Ionicons name="walk-outline" size={28} color={colors.saffronDeep} />
           <View style={{ flex: 1 }}>
             <Text style={styles.cardTitle}>I am a Pilgrim</Text>
@@ -25,7 +25,7 @@ export function RoleSelectionScreen({ navigation }: Props) {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("GuardianRegister")}>
+        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("AccountCheck", { role: "guardian" })}>
           <Ionicons name="people-outline" size={28} color={colors.teal} />
           <View style={{ flex: 1 }}>
             <Text style={styles.cardTitle}>I am a Guardian</Text>

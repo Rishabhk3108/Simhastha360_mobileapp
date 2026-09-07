@@ -12,34 +12,6 @@ import { colors, fonts } from "../theme";
 
 const SKILLS = ["first aid", "crowd management", "translation", "sanitation", "general support"];
 
-function LoginForm() {
-  const { login } = useAuth();
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  async function handleLogin() {
-    setLoading(true);
-    try {
-      await login(phone, password);
-    } catch {
-      Alert.alert("Login failed", "Check your phone number and password.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <>
-      <TextInput style={styles.input} placeholder="Phone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
-      <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
-      <TouchableOpacity style={styles.primaryButton} onPress={handleLogin} disabled={loading}>
-        <Text style={styles.primaryButtonText}>{loading ? "Signing in..." : "Sign in"}</Text>
-      </TouchableOpacity>
-    </>
-  );
-}
-
 function VolunteerRegisterForm() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -61,7 +33,7 @@ function VolunteerRegisterForm() {
   }
 
   if (submitted) {
-    return <Text style={styles.muted}>Application received. Status: Pending Review. Sign in above once an admin approves you.</Text>;
+    return <Text style={styles.muted}>Application received. Status: Pending Review. An admin will approve you before tasks are assigned.</Text>;
   }
 
   return (
@@ -86,7 +58,6 @@ function VolunteerRegisterForm() {
 function VolunteerAccessSection() {
   const { token, role, name, logout } = useAuth();
   const [expanded, setExpanded] = useState(false);
-  const [mode, setMode] = useState<"login" | "register">("login");
 
   if (token) {
     return (
@@ -106,22 +77,14 @@ function VolunteerAccessSection() {
   return (
     <Card>
       <TouchableOpacity style={styles.header} onPress={() => setExpanded((e) => !e)} activeOpacity={0.8}>
-        <Ionicons name="shield-outline" size={18} color={colors.muted} />
-        <Text style={[styles.cardTitle, styles.headerTitle]}>Volunteer / Field Team access</Text>
+        <Ionicons name="hand-left-outline" size={18} color={colors.muted} />
+        <Text style={[styles.cardTitle, styles.headerTitle]}>Register as Volunteer</Text>
         <Ionicons name={expanded ? "chevron-up" : "chevron-down"} size={18} color={colors.muted} />
       </TouchableOpacity>
 
       {expanded && (
         <View style={{ marginTop: 14 }}>
-          <View style={styles.tabRow}>
-            <TouchableOpacity style={[styles.tabButton, mode === "login" && styles.tabButtonActive]} onPress={() => setMode("login")}>
-              <Text style={mode === "login" ? styles.tabTextActive : styles.tabText}>Sign in</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.tabButton, mode === "register" && styles.tabButtonActive]} onPress={() => setMode("register")}>
-              <Text style={mode === "register" ? styles.tabTextActive : styles.tabText}>Register as Volunteer</Text>
-            </TouchableOpacity>
-          </View>
-          {mode === "login" ? <LoginForm /> : <VolunteerRegisterForm />}
+          <VolunteerRegisterForm />
         </View>
       )}
     </Card>
@@ -239,9 +202,4 @@ const styles = StyleSheet.create({
   chipActive: { backgroundColor: colors.ink, borderColor: colors.ink },
   chipText: { fontFamily: fonts.body, fontSize: 12, color: colors.ink },
   chipTextActive: { color: colors.surface },
-  tabRow: { flexDirection: "row", gap: 8, marginBottom: 12 },
-  tabButton: { flex: 1, paddingVertical: 11, borderRadius: 10, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: "center" },
-  tabButtonActive: { backgroundColor: colors.ink, borderColor: colors.ink },
-  tabText: { fontFamily: fonts.bodyMedium, color: colors.ink },
-  tabTextActive: { fontFamily: fonts.bodyBold, color: colors.surface },
 });

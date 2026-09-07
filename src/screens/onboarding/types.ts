@@ -2,6 +2,7 @@ export interface PilgrimFields {
   name: string;
   phone: string;
   aadharNumber: string;
+  password: string;
   age: string;
   photoBase64: string | null;
   samagraId: string;
@@ -26,6 +27,7 @@ export const emptyPilgrimFields: PilgrimFields = {
   name: "",
   phone: "",
   aadharNumber: "",
+  password: "",
   age: "",
   photoBase64: null,
   samagraId: "",
