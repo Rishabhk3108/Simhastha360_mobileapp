@@ -19,6 +19,8 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
   <script>
     var map;
     var userMarker, destinationMarker, routeLine;
+    var mapIsReady = false;
+    var pendingCommands = [];
 
     function setDebug(text) {
       var el = document.getElementById('debug-status');
@@ -85,7 +87,11 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
         function postReadyOnce() {
           if (readyPosted) return;
           readyPosted = true;
-          post({ type: 'mapReady', containerSize: mapDiv.offsetWidth + 'x' + mapDiv.offsetHeight });
+          mapIsReady = true;
+          post({ type: 'mapReady', containerSize: mapDiv.offsetWidth + 'x' + mapDiv.offsetHeight, queuedCommands: pendingCommands.length });
+          var queued = pendingCommands;
+          pendingCommands = [];
+          queued.forEach(runCommand);
         }
         if (typeof map.on === 'function') {
           map.on('load', postReadyOnce);
@@ -113,7 +119,24 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
     }, 10000);
 
     function handleCommand(command) {
+      if (!mapIsReady) {
+        pendingCommands.push(command);
+        post({ type: 'debug', message: 'queued "' + command.type + '" - map not ready yet' });
+        return;
+      }
+      runCommand(command);
+    }
+
+    function runCommand(command) {
       if (!map || !window.__MMI) return;
+      try {
+        runCommandUnsafe(command);
+      } catch (e) {
+        post({ type: 'mapError', message: 'runCommand(' + command.type + '): ' + String((e && e.message) || e) });
+      }
+    }
+
+    function runCommandUnsafe(command) {
       var MMI = window.__MMI;
       if (command.type === 'setUserLocation') {
         if (userMarker) userMarker.remove();
@@ -121,7 +144,6 @@ export function buildMapplsMapHtml(apiKey: string, centerLat: number, centerLng:
           map: map,
           position: { lat: command.lat, lng: command.lng },
           fitbounds: false,
-          icon_url: 'https://apis.mapmyindia.com/map_v3/1.png',
         });
         if (command.recenter) {
           map.setCenter([command.lat, command.lng]);
