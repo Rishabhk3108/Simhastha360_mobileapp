@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
+import { useTranslation } from "react-i18next";
 import { X } from "./icons";
 import { createGuardianLinkToken } from "../api/pilgrims";
 import { colors, fonts } from "../theme";
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export function AddGuardianModal({ visible, pilgrimId, onClose }: Props) {
+  const { t } = useTranslation();
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -22,7 +24,7 @@ export function AddGuardianModal({ visible, pilgrimId, onClose }: Props) {
       const result = await createGuardianLinkToken(pilgrimId);
       setToken(result.token);
     } catch {
-      Alert.alert("Could not generate code", "Please try again.");
+      Alert.alert(t("addGuardianModal.errorTitle"), t("common.tryAgain"));
     } finally {
       setLoading(false);
     }
@@ -38,24 +40,22 @@ export function AddGuardianModal({ visible, pilgrimId, onClose }: Props) {
       <View style={styles.backdrop}>
         <View style={styles.card}>
           <View style={styles.header}>
-            <Text style={styles.title}>Add a guardian</Text>
+            <Text style={styles.title}>{t("addGuardianModal.title")}</Text>
             <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
               <X size={20} color={colors.ink} weight="bold" />
             </TouchableOpacity>
           </View>
-          <Text style={styles.subtitle}>
-            Have them open the app, sign in as a Guardian, and tap "Add member" to scan this code.
-          </Text>
+          <Text style={styles.subtitle}>{t("addGuardianModal.subtitle")}</Text>
 
           <View style={styles.qrWrap}>
             {loading ? <ActivityIndicator color={colors.ink} size="large" /> : token ? <QRCode value={token} size={200} /> : null}
           </View>
 
           {token && <Text style={styles.code}>{token}</Text>}
-          <Text style={styles.expiry}>Valid for 15 minutes.</Text>
+          <Text style={styles.expiry}>{t("addGuardianModal.expiry")}</Text>
 
           <TouchableOpacity style={styles.regenerateButton} onPress={generate} disabled={loading}>
-            <Text style={styles.regenerateButtonText}>Generate a new code</Text>
+            <Text style={styles.regenerateButtonText}>{t("addGuardianModal.regenerate")}</Text>
           </TouchableOpacity>
         </View>
       </View>

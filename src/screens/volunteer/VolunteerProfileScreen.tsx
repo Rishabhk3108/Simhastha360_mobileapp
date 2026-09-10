@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { Star, Coins, LogOut } from "../../components/icons";
 import { Screen } from "../../components/Screen";
 import { Card } from "../../components/Card";
@@ -12,11 +13,18 @@ import { colors, fonts } from "../../theme";
 import type { PointsSummary } from "../../api/types";
 
 export function VolunteerProfileScreen() {
+  const { t } = useTranslation();
   const { name, logout } = useAuth();
+  const navigation = useNavigation<any>();
   const [profile, setProfile] = useState<VolunteerProfile | null>(null);
   const [points, setPoints] = useState<PointsSummary | null>(null);
   const [initialLoading, setInitialLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  async function handleLogout() {
+    await logout();
+    navigation.getParent()?.reset({ index: 0, routes: [{ name: "RoleSelection" }] });
+  }
 
   const load = useCallback(async () => {
     const [profileRes, pointsRes] = await Promise.all([getMyVolunteerStatus(), getMyPoints()]);
@@ -38,13 +46,13 @@ export function VolunteerProfileScreen() {
   }
 
   return (
-    <Screen title="Profile" refreshing={refreshing} onRefresh={onRefresh}>
+    <Screen title={t("volunteerProfile.title")} refreshing={refreshing} onRefresh={onRefresh}>
       <PointsPill />
 
       {initialLoading ? (
         <View style={styles.loadingWrap}>
           <ActivityIndicator color={colors.ink} />
-          <Text style={styles.value}>Loading profile…</Text>
+          <Text style={styles.value}>{t("volunteerProfile.loading")}</Text>
         </View>
       ) : (
         <>
@@ -64,27 +72,27 @@ export function VolunteerProfileScreen() {
             <Card style={styles.statCard}>
               <Star size={20} color={colors.brass} weight="fill" />
               <Text style={styles.statValue}>{profile?.rating != null ? profile.rating.toFixed(1) : "—"}</Text>
-              <Text style={styles.statLabel}>Rating</Text>
+              <Text style={styles.statLabel}>{t("volunteerProfile.rating")}</Text>
             </Card>
             <Card style={styles.statCard}>
               <Coins size={20} color={colors.brass} />
               <Text style={styles.statValue}>{points?.total ?? 0}</Text>
-              <Text style={styles.statLabel}>Total points</Text>
+              <Text style={styles.statLabel}>{t("volunteerProfile.totalPoints")}</Text>
             </Card>
           </View>
 
           <Card>
-            <Text style={styles.sectionTitle}>Skills</Text>
+            <Text style={styles.sectionTitle}>{t("volunteerProfile.skills")}</Text>
             <Text style={styles.value}>{profile?.skills || "—"}</Text>
-            <Text style={[styles.sectionTitle, { marginTop: 12 }]}>Languages</Text>
+            <Text style={[styles.sectionTitle, { marginTop: 12 }]}>{t("volunteerProfile.languages")}</Text>
             <Text style={styles.value}>{profile?.languages || "—"}</Text>
           </Card>
         </>
       )}
 
-      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <LogOut size={16} color={colors.redDeep} />
-        <Text style={styles.logoutText}>Log out</Text>
+        <Text style={styles.logoutText}>{t("common.logOut")}</Text>
       </TouchableOpacity>
     </Screen>
   );

@@ -1,4 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import { Screen } from "../../components/Screen";
 import { Card } from "../../components/Card";
 import { LogOut } from "../../components/icons";
@@ -6,10 +8,17 @@ import { useAuth } from "../../auth/AuthContext";
 import { colors, fonts } from "../../theme";
 
 export function GuardianProfileScreen() {
+  const { t } = useTranslation();
   const { name, logout } = useAuth();
+  const navigation = useNavigation<any>();
+
+  async function handleLogout() {
+    await logout();
+    navigation.getParent()?.reset({ index: 0, routes: [{ name: "RoleSelection" }] });
+  }
 
   return (
-    <Screen title="Profile">
+    <Screen title={t("guardianProfile.title")}>
       <Card>
         <View style={styles.avatarRow}>
           <View style={styles.avatar}>
@@ -17,14 +26,14 @@ export function GuardianProfileScreen() {
           </View>
           <View>
             <Text style={styles.name}>{name}</Text>
-            <Text style={styles.muted}>Guardian</Text>
+            <Text style={styles.muted}>{t("guardianProfile.label")}</Text>
           </View>
         </View>
       </Card>
 
-      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <LogOut size={16} color={colors.redDeep} />
-        <Text style={styles.logoutText}>Log out</Text>
+        <Text style={styles.logoutText}>{t("common.logOut")}</Text>
       </TouchableOpacity>
     </Screen>
   );

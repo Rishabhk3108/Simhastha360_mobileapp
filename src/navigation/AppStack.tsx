@@ -1,4 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { LanguageSelectionScreen } from "../screens/onboarding/LanguageSelectionScreen";
 import { SplashScreen } from "../screens/onboarding/SplashScreen";
 import { RoleSelectionScreen } from "../screens/onboarding/RoleSelectionScreen";
 import { AccountCheckScreen } from "../screens/onboarding/AccountCheckScreen";
@@ -14,6 +15,7 @@ import { VolunteerStatusScreen } from "../screens/onboarding/volunteer/Volunteer
 import { RootNavigator } from "./RootNavigator";
 
 export type OnboardingStackParamList = {
+  LanguageSelection: undefined;
   Splash: undefined;
   RoleSelection: undefined;
   AccountCheck: undefined;
@@ -31,9 +33,10 @@ export type OnboardingStackParamList = {
 
 const Stack = createNativeStackNavigator<OnboardingStackParamList>();
 
-export function AppStack() {
+export function AppStack({ initialRouteName }: { initialRouteName: "LanguageSelection" | "Splash" }) {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Splash">
+    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName={initialRouteName}>
+      <Stack.Screen name="LanguageSelection" component={LanguageSelectionScreen} />
       <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="RoleSelection" component={RoleSelectionScreen} />
       <Stack.Screen name="AccountCheck" component={AccountCheckScreen} />

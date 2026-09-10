@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
@@ -25,12 +26,7 @@ import { advanceStep, distanceToRouteM, formatDistance, OFF_ROUTE_THRESHOLD_M } 
 import { zonesContainingPoint, worstZone } from "../utils/zoneAlerts";
 import type { CrowdLevel, Facility, FacilityType, ParkingZone, VehicleType, Zone } from "../api/types";
 
-const VEHICLE_OPTIONS: { type: VehicleType; label: string }[] = [
-  { type: "two_wheeler", label: "Two-wheeler" },
-  { type: "three_wheeler", label: "Three-wheeler" },
-  { type: "four_wheeler", label: "Four-wheeler" },
-  { type: "six_wheeler", label: "Six-wheeler" },
-];
+const VEHICLE_TYPES: VehicleType[] = ["two_wheeler", "three_wheeler", "four_wheeler", "six_wheeler"];
 
 const UJJAIN_FALLBACK = { lat: 23.1815, lng: 75.7684 };
 const REROUTE_COOLDOWN_MS = 8000;
@@ -50,6 +46,7 @@ type ZoneModalState =
   | { stage: "result"; cleared: boolean; message: string };
 
 export function HomeScreen() {
+  const { t } = useTranslation();
   const { coords, error: locationError } = useLocation();
   const [liveCoords, setLiveCoords] = useState<{ lat: number; lng: number } | null>(null);
   const mapRef = useRef<MapplsMapHandle>(null);
@@ -236,10 +233,10 @@ export function HomeScreen() {
       return {
         stage: "warning",
         severity: destWorst.crowd_level,
-        title: isRed ? "Heavy crowd ahead" : "Moderate crowd ahead",
+        title: isRed ? t("home.heavyCrowdAheadTitle") : t("home.moderateCrowdAheadTitle"),
         message: isRed
-          ? `${destWorst.name} currently has very high crowd density. We recommend postponing your visit to ${placeName} until it normalizes.`
-          : `${destWorst.name} currently has moderate crowd density. Please proceed with caution.`,
+          ? t("home.destRedMessage", { zoneName: destWorst.name, placeName })
+          : t("home.destYellowMessage", { zoneName: destWorst.name }),
       };
     }
     const routeWorst = worstZone(result.crossedZones);
@@ -248,8 +245,12 @@ export function HomeScreen() {
       return {
         stage: "warning",
         severity: routeWorst.crowd_level,
-        title: isRed ? "Route passes through a red zone" : "Route passes through a yellow zone",
-        message: `${result.rerouted ? "We already picked a route that reduces crowd exposure, but it still " : "Your route "}passes through ${routeWorst.name} (${routeWorst.crowd_level} zone). ${isRed ? "We recommend postponing your plans until it normalizes." : "Expect delays."}`,
+        title: isRed ? t("home.routeRedTitle") : t("home.routeYellowTitle"),
+        message: t(result.rerouted ? "home.routeCrowdMessageRerouted" : "home.routeCrowdMessageDirect", {
+          zoneName: routeWorst.name,
+          level: t(`home.zoneLevelWord.${routeWorst.crowd_level}`),
+          advice: t(isRed ? "home.adviceRed" : "home.adviceYellow"),
+        }),
       };
     }
     return null;
@@ -270,7 +271,7 @@ export function HomeScreen() {
       mapRef.current?.drawRoute(result.coordinates);
       setZoneModal(buildZoneWarning(result, placeInfo.placeName));
     } catch {
-      Alert.alert("Could not get directions", "Please try again.");
+      Alert.alert(t("home.directionsErrorTitle"), t("common.tryAgain"));
     } finally {
       setRouting(false);
     }
@@ -302,11 +303,9 @@ export function HomeScreen() {
     if (!saarthiVehicleType || !saarthiVehicleNumber.trim()) return;
     if (!route) {
       setSaarthiVisible(false);
-      Alert.alert(
-        "Pick a destination first",
-        "Search and select where you're headed, then use Sinhastha Saarthi to find parking near it.",
-        [{ text: "OK", onPress: () => searchInputRef.current?.focus() }],
-      );
+      Alert.alert(t("home.pickDestinationFirstTitle"), t("home.pickDestinationFirstBody"), [
+        { text: t("home.ok"), onPress: () => searchInputRef.current?.focus() },
+      ]);
       return;
     }
     setSaarthiSearching(true);
@@ -320,7 +319,7 @@ export function HomeScreen() {
 
       const nearest = findNearestAvailable(fresh, finalDestinationCoord, saarthiVehicleType);
       if (!nearest) {
-        Alert.alert("No parking available", "We couldn't find an available parking spot for this vehicle type near your destination right now.");
+        Alert.alert(t("home.noParkingTitle"), t("home.noParkingBody"));
         return;
       }
       await createParkingBooking(nearest.id, saarthiVehicleType, saarthiVehicleNumber.trim());
@@ -336,7 +335,7 @@ export function HomeScreen() {
         // the drive-to-parking leg still succeeded; the last-mile walk overlay is a bonus, not critical
       }
     } catch {
-      Alert.alert("Could not book parking", "Please try again.");
+      Alert.alert(t("home.bookParkingErrorTitle"), t("common.tryAgain"));
     } finally {
       setSaarthiSearching(false);
     }
@@ -361,11 +360,11 @@ export function HomeScreen() {
         stage: "result",
         cleared: !stillWorst,
         message: stillWorst
-          ? `We searched nearby roads but couldn't find one that fully avoids ${stillWorst.name} (${stillWorst.crowd_level} zone). Showing the best available option.`
-          : "Found a route that avoids the marked crowd zones.",
+          ? t("home.stillCrowdedMessage", { zoneName: stillWorst.name, level: t(`home.zoneLevelWord.${stillWorst.crowd_level}`) })
+          : t("home.clearedMessage"),
       });
     } catch {
-      setZoneModal({ stage: "result", cleared: false, message: "Couldn't search for an alternative route right now. Please try again." });
+      setZoneModal({ stage: "result", cleared: false, message: t("home.rerouteFailedMessage") });
     }
   }
 
@@ -434,9 +433,9 @@ export function HomeScreen() {
             >
               <WarningCircle size={16} color={colors.surface} weight="fill" />
               <Text style={styles.zoneWarningText}>
-                {currentZoneWarning.crowd_level === "red"
-                  ? `You're in a high-crowd zone (${currentZoneWarning.name}). Consider moving to a safer area.`
-                  : `You're in a moderate-crowd zone (${currentZoneWarning.name}). Stay alert.`}
+                {t(currentZoneWarning.crowd_level === "red" ? "home.inHighCrowdZone" : "home.inModerateCrowdZone", {
+                  zoneName: currentZoneWarning.name,
+                })}
               </Text>
             </View>
           )}
@@ -446,7 +445,7 @@ export function HomeScreen() {
             <TextInput
               ref={searchInputRef}
               style={styles.searchInput}
-              placeholder="Search ghats, camps, help desks"
+              placeholder={t("home.searchPlaceholder")}
               placeholderTextColor={colors.muted2}
               value={query}
               onChangeText={setQuery}
@@ -484,7 +483,7 @@ export function HomeScreen() {
             <View style={styles.badgeRow}>
               <View style={styles.miniBadge}>
                 <CloudSlash size={14} color={colors.saffronDeep} weight="fill" />
-                <Text style={styles.miniBadgeText}>Offline map ready</Text>
+                <Text style={styles.miniBadgeText}>{t("home.offlineMapReady")}</Text>
               </View>
               {locationError && (
                 <View style={styles.miniBadge}>
@@ -519,21 +518,21 @@ export function HomeScreen() {
             >
               <WarningCircle size={16} color={colors.surface} weight="fill" />
               <Text style={styles.zoneWarningText}>
-                {currentZoneWarning.crowd_level === "red"
-                  ? `High-crowd zone (${currentZoneWarning.name}). Consider an alternate stop.`
-                  : `Moderate-crowd zone (${currentZoneWarning.name}). Stay alert.`}
+                {t(currentZoneWarning.crowd_level === "red" ? "home.navHighCrowdZone" : "home.navModerateCrowdZone", {
+                  zoneName: currentZoneWarning.name,
+                })}
               </Text>
             </View>
           )}
           <View style={styles.navRow}>
             <View style={styles.navCard}>
               {arrived ? (
-                <Text style={styles.navInstruction}>You have arrived at {destination?.placeName}</Text>
+                <Text style={styles.navInstruction}>{t("home.arrivedAt", { placeName: destination?.placeName })}</Text>
               ) : (
                 <>
                   <Text style={styles.navDistance}>{formatDistance(distanceToManeuverM)}</Text>
                   <Text style={styles.navInstruction}>{currentStep.instruction}</Text>
-                  {nextStep && <Text style={styles.navNext}>Then {nextStep.instruction.toLowerCase()}</Text>}
+                  {nextStep && <Text style={styles.navNext}>{t("home.then", { instruction: nextStep.instruction.toLowerCase() })}</Text>}
                 </>
               )}
             </View>
@@ -552,16 +551,16 @@ export function HomeScreen() {
             route && (
               <>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.routeDuration}>{Math.round(route.durationMin)} min</Text>
+                  <Text style={styles.routeDuration}>{t("home.minutes", { count: Math.round(route.durationMin) })}</Text>
                   <Text style={styles.routeDistance}>
-                    {route.distanceKm.toFixed(1)} km · to {destination?.placeName}
+                    {t("home.distanceTo", { distance: route.distanceKm.toFixed(1), placeName: destination?.placeName })}
                   </Text>
                 </View>
                 <TouchableOpacity style={styles.clearButton} onPress={clearRoute}>
-                  <Text style={styles.clearButtonText}>Clear</Text>
+                  <Text style={styles.clearButtonText}>{t("home.clear")}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.navigateButton} onPress={startNavigation}>
-                  <Text style={styles.navigateButtonText}>Start</Text>
+                  <Text style={styles.navigateButtonText}>{t("home.start")}</Text>
                 </TouchableOpacity>
               </>
             )
@@ -586,7 +585,7 @@ export function HomeScreen() {
       {!navigating && (
         <TouchableOpacity style={styles.saarthiButton} onPress={() => setSaarthiVisible(true)}>
           <Car size={18} color={colors.surface} weight="fill" />
-          <Text style={styles.saarthiButtonText}>Saarthi</Text>
+          <Text style={styles.saarthiButtonText}>{t("home.saarthi")}</Text>
         </TouchableOpacity>
       )}
 
@@ -596,22 +595,20 @@ export function HomeScreen() {
             <View style={[styles.modalIconWrap, styles.modalIconTeal]}>
               <Car size={28} color={colors.surface} weight="fill" />
             </View>
-            <Text style={styles.modalTitle}>Sinhastha Saarthi</Text>
-            <Text style={styles.modalBody}>
-              Tell us your vehicle and we&apos;ll guide you to the nearest available parking near your destination.
-            </Text>
+            <Text style={styles.modalTitle}>{t("home.saarthiTitle")}</Text>
+            <Text style={styles.modalBody}>{t("home.saarthiBody")}</Text>
 
             <View style={styles.vehicleTypeGrid}>
-              {VEHICLE_OPTIONS.map((opt) => (
+              {VEHICLE_TYPES.map((type) => (
                 <TouchableOpacity
-                  key={opt.type}
-                  style={[styles.vehicleTypeChip, saarthiVehicleType === opt.type && styles.vehicleTypeChipActive]}
-                  onPress={() => setSaarthiVehicleType(opt.type)}
+                  key={type}
+                  style={[styles.vehicleTypeChip, saarthiVehicleType === type && styles.vehicleTypeChipActive]}
+                  onPress={() => setSaarthiVehicleType(type)}
                 >
                   <Text
-                    style={[styles.vehicleTypeChipText, saarthiVehicleType === opt.type && styles.vehicleTypeChipTextActive]}
+                    style={[styles.vehicleTypeChipText, saarthiVehicleType === type && styles.vehicleTypeChipTextActive]}
                   >
-                    {opt.label}
+                    {t(`home.vehicleType.${type}`)}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -619,7 +616,7 @@ export function HomeScreen() {
 
             <TextInput
               style={styles.vehicleNumberInput}
-              placeholder="Vehicle number (e.g. MP09AB1234)"
+              placeholder={t("home.vehicleNumberPlaceholder")}
               placeholderTextColor={colors.muted2}
               autoCapitalize="characters"
               value={saarthiVehicleNumber}
@@ -635,10 +632,10 @@ export function HomeScreen() {
                   onPress={submitSaarthi}
                   disabled={!saarthiVehicleType || !saarthiVehicleNumber.trim()}
                 >
-                  <Text style={styles.modalPrimaryButtonText}>Find parking</Text>
+                  <Text style={styles.modalPrimaryButtonText}>{t("home.findParking")}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.modalSecondaryButton} onPress={() => setSaarthiVisible(false)}>
-                  <Text style={styles.modalSecondaryButtonText}>Cancel</Text>
+                  <Text style={styles.modalSecondaryButtonText}>{t("common.cancel")}</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -662,10 +659,10 @@ export function HomeScreen() {
                 <Text style={styles.modalTitle}>{zoneModal.title}</Text>
                 <Text style={styles.modalBody}>{zoneModal.message}</Text>
                 <TouchableOpacity style={styles.modalPrimaryButton} onPress={exploreAlternativeRoutes}>
-                  <Text style={styles.modalPrimaryButtonText}>Explore alternative routes</Text>
+                  <Text style={styles.modalPrimaryButtonText}>{t("home.exploreAlternativeRoutes")}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.modalSecondaryButton} onPress={() => setZoneModal(null)}>
-                  <Text style={styles.modalSecondaryButtonText}>Continue with this route</Text>
+                  <Text style={styles.modalSecondaryButtonText}>{t("home.continueWithRoute")}</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -673,7 +670,7 @@ export function HomeScreen() {
             {zoneModal?.stage === "searching" && (
               <>
                 <ActivityIndicator color={colors.saffronDeep} size="large" style={{ marginBottom: 14 }} />
-                <Text style={styles.modalTitle}>Looking for a clearer route…</Text>
+                <Text style={styles.modalTitle}>{t("home.searchingRoute")}</Text>
               </>
             )}
 
@@ -686,10 +683,10 @@ export function HomeScreen() {
                     <WarningCircle size={30} color={colors.surface} weight="fill" />
                   )}
                 </View>
-                <Text style={styles.modalTitle}>{zoneModal.cleared ? "Route updated" : "No fully clear route found"}</Text>
+                <Text style={styles.modalTitle}>{zoneModal.cleared ? t("home.routeUpdated") : t("home.noClearRoute")}</Text>
                 <Text style={styles.modalBody}>{zoneModal.message}</Text>
                 <TouchableOpacity style={styles.modalPrimaryButton} onPress={() => setZoneModal(null)}>
-                  <Text style={styles.modalPrimaryButtonText}>OK</Text>
+                  <Text style={styles.modalPrimaryButtonText}>{t("home.ok")}</Text>
                 </TouchableOpacity>
               </>
             )}

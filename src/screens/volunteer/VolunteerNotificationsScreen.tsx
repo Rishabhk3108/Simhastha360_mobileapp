@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { Bell } from "../../components/icons";
 import { Screen } from "../../components/Screen";
 import { Card } from "../../components/Card";
@@ -10,6 +11,7 @@ import { colors, fonts } from "../../theme";
 import type { AppNotification } from "../../api/types";
 
 export function VolunteerNotificationsScreen() {
+  const { t } = useTranslation();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -38,12 +40,12 @@ export function VolunteerNotificationsScreen() {
   }
 
   return (
-    <Screen title="Notifications" refreshing={refreshing} onRefresh={onRefresh}>
+    <Screen title={t("volunteerNotifications.title")} refreshing={refreshing} onRefresh={onRefresh}>
       <PointsPill />
       {initialLoading && (
         <View style={styles.loadingWrap}>
           <ActivityIndicator color={colors.ink} />
-          <Text style={styles.muted}>Loading…</Text>
+          <Text style={styles.muted}>{t("common.loading")}</Text>
         </View>
       )}
       {!initialLoading && notifications.map((n) => (
@@ -59,7 +61,7 @@ export function VolunteerNotificationsScreen() {
           </Card>
         </TouchableOpacity>
       ))}
-      {!initialLoading && notifications.length === 0 && <Text style={styles.muted}>No notifications yet.</Text>}
+      {!initialLoading && notifications.length === 0 && <Text style={styles.muted}>{t("volunteerNotifications.empty")}</Text>}
     </Screen>
   );
 }

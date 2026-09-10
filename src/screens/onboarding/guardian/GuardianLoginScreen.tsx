@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ActivityIndicator, Alert, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
 import { colors, fonts } from "../../../theme";
 import { useAuth } from "../../../auth/AuthContext";
 import type { OnboardingStackParamList } from "../../../navigation/AppStack";
@@ -8,6 +9,7 @@ import type { OnboardingStackParamList } from "../../../navigation/AppStack";
 type Props = NativeStackScreenProps<OnboardingStackParamList, "GuardianLogin">;
 
 export function GuardianLoginScreen({ navigation }: Props) {
+  const { t } = useTranslation();
   const { login } = useAuth();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -21,10 +23,8 @@ export function GuardianLoginScreen({ navigation }: Props) {
       navigation.replace("Main");
     } catch (err: any) {
       Alert.alert(
-        "Could not sign in",
-        err.response?.status === 403
-          ? "This account isn't registered as a guardian."
-          : err.response?.data?.detail ?? "Check your phone and password.",
+        t("guardianLogin.failedTitle"),
+        err.response?.status === 403 ? t("guardianLogin.notGuardian") : err.response?.data?.detail ?? t("guardianLogin.checkCredentials"),
       );
     } finally {
       setLoading(false);
@@ -34,12 +34,12 @@ export function GuardianLoginScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.content}>
-        <Text style={styles.title}>Guardian sign in</Text>
-        <Text style={styles.subtitle}>Use the phone number and password from your guardian registration.</Text>
+        <Text style={styles.title}>{t("guardianLogin.title")}</Text>
+        <Text style={styles.subtitle}>{t("guardianLogin.subtitle")}</Text>
 
         <TextInput
           style={styles.input}
-          placeholder="Phone number"
+          placeholder={t("common.phonePlaceholder")}
           placeholderTextColor={colors.muted2}
           value={phone}
           onChangeText={setPhone}
@@ -47,7 +47,7 @@ export function GuardianLoginScreen({ navigation }: Props) {
         />
         <TextInput
           style={styles.input}
-          placeholder="Password"
+          placeholder={t("common.passwordPlaceholder")}
           placeholderTextColor={colors.muted2}
           value={password}
           onChangeText={setPassword}
@@ -55,11 +55,11 @@ export function GuardianLoginScreen({ navigation }: Props) {
         />
 
         <TouchableOpacity style={styles.primaryButton} onPress={submit} disabled={loading}>
-          {loading ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.primaryButtonText}>Sign in</Text>}
+          {loading ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.primaryButtonText}>{t("common.signIn")}</Text>}
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.backLink} onPress={() => navigation.goBack()}>
-          <Text style={styles.backLinkText}>Back</Text>
+          <Text style={styles.backLinkText}>{t("common.back")}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

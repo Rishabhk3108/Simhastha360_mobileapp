@@ -1,14 +1,14 @@
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import type { CrowdLevel } from "../api/types";
 import { crowdBg, crowdColor, fonts } from "../theme";
 
-const LABELS: Record<CrowdLevel, string> = { green: "Clear", yellow: "Busy", red: "Very high" };
-
 export function CrowdBadge({ level }: { level: CrowdLevel }) {
+  const { t } = useTranslation();
   return (
     <View style={[styles.badge, { backgroundColor: crowdBg[level] }]}>
       <View style={[styles.dot, { backgroundColor: crowdColor[level] }]} />
-      <Text style={[styles.text, { color: crowdColor[level] }]}>{LABELS[level]}</Text>
+      <Text style={[styles.text, { color: crowdColor[level] }]}>{t(`crowdBadge.${level}`)}</Text>
     </View>
   );
 }

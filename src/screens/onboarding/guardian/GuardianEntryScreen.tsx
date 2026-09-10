@@ -1,32 +1,33 @@
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
 import { colors, fonts } from "../../../theme";
 import type { OnboardingStackParamList } from "../../../navigation/AppStack";
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, "GuardianEntry">;
 
 export function GuardianEntryScreen({ navigation }: Props) {
+  const { t } = useTranslation();
+
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.content}>
         <View style={styles.iconWrap}>
           <Ionicons name="people-outline" size={36} color={colors.surface} />
         </View>
-        <Text style={styles.title}>Guardian account</Text>
-        <Text style={styles.subtitle}>
-          Already have a guardian account, or setting one up for the first time to track a family member?
-        </Text>
+        <Text style={styles.title}>{t("guardianEntry.title")}</Text>
+        <Text style={styles.subtitle}>{t("guardianEntry.subtitle")}</Text>
 
         <TouchableOpacity style={styles.primaryButton} onPress={() => navigation.navigate("GuardianLogin")}>
-          <Text style={styles.primaryButtonText}>Login as Guardian</Text>
+          <Text style={styles.primaryButtonText}>{t("guardianEntry.login")}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate("GuardianRegister")}>
-          <Text style={styles.secondaryButtonText}>Register as Guardian</Text>
+          <Text style={styles.secondaryButtonText}>{t("guardianEntry.register")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.backLink} onPress={() => navigation.goBack()}>
-          <Text style={styles.backLinkText}>Back</Text>
+          <Text style={styles.backLinkText}>{t("common.back")}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

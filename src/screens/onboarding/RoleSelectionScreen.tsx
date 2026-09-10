@@ -1,51 +1,54 @@
 import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { colors, fonts } from "../../theme";
 import type { OnboardingStackParamList } from "../../navigation/AppStack";
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, "RoleSelection">;
 
 export function RoleSelectionScreen({ navigation }: Props) {
-  function comingSoon(role: string) {
-    Alert.alert("Coming soon", `${role} registration will be available in a later update.`);
+  const { t } = useTranslation();
+
+  function comingSoon() {
+    Alert.alert(t("roleSelection.comingSoonTitle"), t("roleSelection.comingSoonBody"));
   }
 
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.content}>
-        <Text style={styles.title}>Welcome to Simhastha 360</Text>
-        <Text style={styles.subtitle}>Tell us who you are so we can set you up correctly.</Text>
+        <Text style={styles.title}>{t("roleSelection.title")}</Text>
+        <Text style={styles.subtitle}>{t("roleSelection.subtitle")}</Text>
 
         <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("AccountCheck")}>
           <Ionicons name="walk-outline" size={28} color={colors.saffronDeep} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.cardTitle}>I am a Pilgrim</Text>
-            <Text style={styles.cardSubtitle}>Register yourself for Simhastha.</Text>
+            <Text style={styles.cardTitle}>{t("roleSelection.pilgrimTitle")}</Text>
+            <Text style={styles.cardSubtitle}>{t("roleSelection.pilgrimSubtitle")}</Text>
           </View>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("GuardianEntry")}>
           <Ionicons name="people-outline" size={28} color={colors.teal} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.cardTitle}>I am a Guardian</Text>
-            <Text style={styles.cardSubtitle}>Track a family member's safety updates while they're at Simhastha.</Text>
+            <Text style={styles.cardTitle}>{t("roleSelection.guardianTitle")}</Text>
+            <Text style={styles.cardSubtitle}>{t("roleSelection.guardianSubtitle")}</Text>
           </View>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("VolunteerEntry")}>
           <Ionicons name="hand-left-outline" size={28} color={colors.teal} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.cardTitle}>Volunteer</Text>
-            <Text style={styles.cardSubtitle}>Already registered, or joining as a Simhastha volunteer for the first time.</Text>
+            <Text style={styles.cardTitle}>{t("roleSelection.volunteerTitle")}</Text>
+            <Text style={styles.cardSubtitle}>{t("roleSelection.volunteerSubtitle")}</Text>
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.card, styles.cardDisabled]} onPress={() => comingSoon("Foreign guest")}>
+        <TouchableOpacity style={[styles.card, styles.cardDisabled]} onPress={comingSoon}>
           <Ionicons name="airplane-outline" size={28} color={colors.faint} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.cardTitleDisabled}>Are you a guest to India?</Text>
-            <Text style={styles.cardSubtitle}>Coming soon.</Text>
+            <Text style={styles.cardTitleDisabled}>{t("roleSelection.foreignGuestTitle")}</Text>
+            <Text style={styles.cardSubtitle}>{t("roleSelection.comingSoon")}</Text>
           </View>
         </TouchableOpacity>
       </View>

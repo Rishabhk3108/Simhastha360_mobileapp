@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { WarningCircle, MapPin, Coins, NavigationArrow, Camera } from "../components/icons";
 import { Screen } from "../components/Screen";
 import { Card } from "../components/Card";
@@ -10,13 +11,14 @@ import { getMyTasks, acknowledgeTask } from "../api/tasks";
 import { api } from "../api/client";
 import { useLocation } from "../location/useLocation";
 import { colors, fonts } from "../theme";
-import { STATUS_LABELS } from "../utils/taskStatus";
+import { taskStatusLabel } from "../utils/taskStatus";
 import type { Task } from "../api/types";
 
 const PRIORITY_COLOR: Record<Task["priority"], string> = { low: colors.green, medium: colors.yellow, high: colors.red };
 const TASK_POLL_INTERVAL_MS = 15000;
 
 export function TasksScreen() {
+  const { t } = useTranslation();
   const { coords } = useLocation();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -54,67 +56,67 @@ export function TasksScreen() {
       setTasks((t) => t.map((x) => (x.id === updated.id ? updated : x)));
       setDirectionsTask(updated);
     } catch {
-      Alert.alert("Could not accept task", "Please try again.");
+      Alert.alert(t("tasks.acceptFailedTitle"), t("common.tryAgain"));
     } finally {
       setAcceptingId(null);
     }
   }
 
   return (
-    <Screen title="My tasks" subtitle="Field team" refreshing={refreshing} onRefresh={onRefresh}>
+    <Screen title={t("tasks.title")} subtitle={t("tasks.subtitle")} refreshing={refreshing} onRefresh={onRefresh}>
       {initialLoading && (
         <View style={styles.loadingWrap}>
           <ActivityIndicator color={colors.ink} />
-          <Text style={styles.muted}>Loading your tasks…</Text>
+          <Text style={styles.muted}>{t("tasks.loading")}</Text>
         </View>
       )}
 
-      {!initialLoading && tasks.map((t) => (
-        <Card key={t.id} style={{ borderLeftWidth: 4, borderLeftColor: PRIORITY_COLOR[t.priority] }}>
-          {t.priority === "high" && (
+      {!initialLoading && tasks.map((task) => (
+        <Card key={task.id} style={{ borderLeftWidth: 4, borderLeftColor: PRIORITY_COLOR[task.priority] }}>
+          {task.priority === "high" && (
             <View style={styles.priorityRow}>
               <WarningCircle size={14} color={colors.redDeep} weight="fill" />
-              <Text style={styles.priorityText}>High priority</Text>
+              <Text style={styles.priorityText}>{t("tasks.highPriority")}</Text>
             </View>
           )}
-          <Text style={styles.description}>{t.description}</Text>
+          <Text style={styles.description}>{task.description}</Text>
           <View style={styles.metaRow}>
             <View style={styles.metaChip}>
               <MapPin size={12} color={colors.muted} />
-              <Text style={styles.metaText}>Priority: {t.priority}</Text>
+              <Text style={styles.metaText}>{t("tasks.priorityLabel", { priority: t(`tasks.priorityWord.${task.priority}`) })}</Text>
             </View>
             <View style={styles.metaChip}>
               <Coins size={12} color={colors.muted} />
-              <Text style={styles.metaText}>{t.points} pts</Text>
+              <Text style={styles.metaText}>{t("tasks.points", { count: task.points })}</Text>
             </View>
           </View>
-          <Text style={styles.status}>{STATUS_LABELS[t.status]}</Text>
+          <Text style={styles.status}>{taskStatusLabel(t, task.status)}</Text>
 
-          {t.status === "assigned" && (
-            <TouchableOpacity style={styles.primaryButton} onPress={() => accept(t)} disabled={acceptingId === t.id}>
-              {acceptingId === t.id ? (
+          {task.status === "assigned" && (
+            <TouchableOpacity style={styles.primaryButton} onPress={() => accept(task)} disabled={acceptingId === task.id}>
+              {acceptingId === task.id ? (
                 <ActivityIndicator color={colors.surface} size="small" />
               ) : (
-                <Text style={styles.primaryButtonText}>Acknowledge</Text>
+                <Text style={styles.primaryButtonText}>{t("tasks.acknowledge")}</Text>
               )}
             </TouchableOpacity>
           )}
-          {t.status === "acknowledged" && (
+          {task.status === "acknowledged" && (
             <View style={styles.actionRow}>
-              <TouchableOpacity style={styles.secondaryButton} onPress={() => setDirectionsTask(t)}>
+              <TouchableOpacity style={styles.secondaryButton} onPress={() => setDirectionsTask(task)}>
                 <NavigationArrow size={15} color={colors.ink} />
-                <Text style={styles.secondaryButtonText}>Directions</Text>
+                <Text style={styles.secondaryButtonText}>{t("tasks.directions")}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.primaryButtonFlex} onPress={() => setCompletingTaskId(t.id)}>
+              <TouchableOpacity style={styles.primaryButtonFlex} onPress={() => setCompletingTaskId(task.id)}>
                 <Camera size={15} color={colors.surface} />
-                <Text style={styles.primaryButtonText}>Complete</Text>
+                <Text style={styles.primaryButtonText}>{t("tasks.complete")}</Text>
               </TouchableOpacity>
             </View>
           )}
-          {t.status === "review" && <Text style={styles.muted}>Submitted — awaiting review.</Text>}
+          {task.status === "review" && <Text style={styles.muted}>{t("tasks.awaitingReview")}</Text>}
         </Card>
       ))}
-      {!initialLoading && tasks.length === 0 && <Text style={styles.muted}>No tasks assigned right now.</Text>}
+      {!initialLoading && tasks.length === 0 && <Text style={styles.muted}>{t("tasks.empty")}</Text>}
 
       <TaskDirectionsModal
         visible={!!directionsTask}

@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { Crosshair, FirstAidKit, Drop, Info, Toilet, NavigationArrow } from "../components/icons";
 import { api } from "../api/client";
 import { Screen } from "../components/Screen";
@@ -10,13 +11,7 @@ import { haversineKm } from "../location/geo";
 import { colors, fonts } from "../theme";
 import type { Facility, FacilityType } from "../api/types";
 
-const FILTERS: { label: string; value: FacilityType | null }[] = [
-  { label: "All", value: null },
-  { label: "Medical", value: "medical" },
-  { label: "Toilets", value: "toilet" },
-  { label: "Water", value: "water" },
-  { label: "Help Desk", value: "help_desk" },
-];
+const FILTER_VALUES: (FacilityType | null)[] = [null, "medical", "toilet", "water", "help_desk"];
 
 const FACILITY_ICON: Record<FacilityType, { Icon: typeof FirstAidKit; color: string; bg: string }> = {
   medical: { Icon: FirstAidKit, color: colors.teal, bg: colors.tealTint },
@@ -27,6 +22,7 @@ const FACILITY_ICON: Record<FacilityType, { Icon: typeof FirstAidKit; color: str
 };
 
 export function FindHelpScreen() {
+  const { t } = useTranslation();
   const { coords, error: locationError } = useLocation();
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [filter, setFilter] = useState<FacilityType | null>(null);
@@ -56,20 +52,22 @@ export function FindHelpScreen() {
     : facilities;
 
   return (
-    <Screen title="Find help" refreshing={refreshing} onRefresh={onRefresh}>
+    <Screen title={t("findHelp.title")} refreshing={refreshing} onRefresh={onRefresh}>
       <View style={styles.locationRow}>
         <Crosshair size={14} color={colors.tealDeep} weight="fill" />
-        <Text style={styles.locationText}>My location</Text>
+        <Text style={styles.locationText}>{t("findHelp.myLocation")}</Text>
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
-        {FILTERS.map((f) => (
+        {FILTER_VALUES.map((value) => (
           <TouchableOpacity
-            key={f.label}
-            onPress={() => setFilter(f.value)}
-            style={[styles.chip, filter === f.value && styles.chipActive]}
+            key={value ?? "all"}
+            onPress={() => setFilter(value)}
+            style={[styles.chip, filter === value && styles.chipActive]}
           >
-            <Text style={[styles.chipText, filter === f.value && styles.chipTextActive]}>{f.label}</Text>
+            <Text style={[styles.chipText, filter === value && styles.chipTextActive]}>
+              {t(`findHelp.filter.${value ?? "all"}`)}
+            </Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -87,15 +85,15 @@ export function FindHelpScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.name}>{f.name}</Text>
                 <Text style={styles.muted}>
-                  {f.type.replace("_", " ")}
-                  {coords ? ` · ${haversineKm(coords.lat, coords.lng, f.lat, f.lng).toFixed(1)} km away` : ""}
+                  {t(`findHelp.filter.${f.type}`)}
+                  {coords ? t("findHelp.distanceAway", { distance: haversineKm(coords.lat, coords.lng, f.lat, f.lng).toFixed(1) }) : ""}
                 </Text>
               </View>
               <NavigationArrow size={20} color={colors.saffronDeep} />
             </Card>
           );
         })}
-        {sorted.length === 0 && <Text style={styles.muted}>No facilities found for this filter.</Text>}
+        {sorted.length === 0 && <Text style={styles.muted}>{t("findHelp.empty")}</Text>}
       </View>
     </Screen>
   );

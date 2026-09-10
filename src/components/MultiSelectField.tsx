@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { colors, fonts } from "../theme";
 
 export interface SelectOption {
@@ -15,7 +16,8 @@ interface Props {
   onChange: (values: string[]) => void;
 }
 
-export function MultiSelectField({ label, placeholder = "Select...", options, selected, onChange }: Props) {
+export function MultiSelectField({ label, placeholder, options, selected, onChange }: Props) {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
 
   function toggle(value: string) {
@@ -29,7 +31,7 @@ export function MultiSelectField({ label, placeholder = "Select...", options, se
       <TouchableOpacity style={styles.field} onPress={() => setVisible(true)}>
         <Text style={styles.fieldLabel}>{label}</Text>
         <Text style={[styles.fieldValue, summary.length === 0 && styles.fieldPlaceholder]} numberOfLines={1}>
-          {summary.length > 0 ? summary.join(", ") : placeholder}
+          {summary.length > 0 ? summary.join(", ") : placeholder ?? t("multiSelectField.selectPlaceholder")}
         </Text>
       </TouchableOpacity>
 
@@ -49,7 +51,7 @@ export function MultiSelectField({ label, placeholder = "Select...", options, se
               })}
             </ScrollView>
             <TouchableOpacity style={styles.doneButton} onPress={() => setVisible(false)}>
-              <Text style={styles.doneButtonText}>Done ({selected.length} selected)</Text>
+              <Text style={styles.doneButtonText}>{t("multiSelectField.done", { count: selected.length })}</Text>
             </TouchableOpacity>
           </View>
         </View>

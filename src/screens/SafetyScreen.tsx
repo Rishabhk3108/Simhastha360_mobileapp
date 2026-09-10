@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { Siren } from "../components/icons";
 import { Screen } from "../components/Screen";
 import { Card } from "../components/Card";
@@ -11,14 +12,8 @@ import { colors, fonts } from "../theme";
 const SOS_POLL_INTERVAL_MS = 5000;
 const { height: SCREEN_H } = Dimensions.get("window");
 
-const SOS_STATUS_TEXT: Record<SOSStatusOut["status"], string> = {
-  pending: "Looking for the nearest responder…",
-  assigned: "A responder has been notified and should acknowledge shortly.",
-  responding: "Help is on the way.",
-  resolved: "This alert has been resolved.",
-};
-
 export function SafetyScreen() {
+  const { t } = useTranslation();
   const { coords, error: locationError } = useLocation();
   const [sending, setSending] = useState(false);
   const [activeSOS, setActiveSOS] = useState<{ id: number; deviceId: string } | null>(null);
@@ -51,7 +46,7 @@ export function SafetyScreen() {
 
   async function sendSOS() {
     if (!coords) {
-      Alert.alert("Location needed", "We need your location to route a responder to you.");
+      Alert.alert(t("safety.locationNeededTitle"), t("safety.locationNeededBody"));
       return;
     }
     setSending(true);
@@ -60,7 +55,7 @@ export function SafetyScreen() {
       const sos = await createSOS(deviceId, coords.lat, coords.lng);
       setActiveSOS({ id: sos.id, deviceId });
     } catch {
-      Alert.alert("Could not send SOS", "Please try again or find the nearest help desk.");
+      Alert.alert(t("safety.sendFailedTitle"), t("safety.sendFailedBody"));
     } finally {
       setSending(false);
     }
@@ -74,14 +69,14 @@ export function SafetyScreen() {
       setActiveSOS(null);
       setSosStatus(null);
     } catch {
-      Alert.alert("Could not cancel", "Please try again.");
+      Alert.alert(t("safety.cancelFailedTitle"), t("common.tryAgain"));
     } finally {
       setCancelling(false);
     }
   }
 
   return (
-    <Screen title="Safety">
+    <Screen title={t("safety.title")}>
       {locationError && <Text style={styles.muted}>{locationError}</Text>}
 
       {!activeSOS ? (
@@ -92,30 +87,32 @@ export function SafetyScreen() {
                 <Siren size={72} color={colors.surface} weight="fill" />
               </View>
             </View>
-            <Text style={styles.sosText}>{sending ? "Sending..." : "SOS — Send Help"}</Text>
+            <Text style={styles.sosText}>{sending ? t("safety.sending") : t("safety.sendHelp")}</Text>
           </TouchableOpacity>
-          <Text style={styles.helperText}>Tap only in a genuine emergency. Your location is sent to the nearest responder.</Text>
+          <Text style={styles.helperText}>{t("safety.helperText")}</Text>
         </View>
       ) : (
         <Card style={styles.sosStatusCard}>
           <View style={styles.titleRow}>
             <Siren size={18} color={colors.redDeep} weight="fill" />
-            <Text style={styles.sosStatusTitle}>SOS active</Text>
+            <Text style={styles.sosStatusTitle}>{t("safety.active")}</Text>
           </View>
-          <Text style={styles.sosStatusText}>{sosStatus ? SOS_STATUS_TEXT[sosStatus.status] : "Sending your alert…"}</Text>
+          <Text style={styles.sosStatusText}>{sosStatus ? t(`safety.status.${sosStatus.status}`) : t("safety.sendingAlert")}</Text>
           {sosStatus?.responder_name && (
             <Text style={styles.sosStatusText}>
-              Responder: <Text style={{ fontFamily: fonts.bodyBold }}>{sosStatus.responder_name}</Text>
+              {t("safety.responderLabel")} <Text style={{ fontFamily: fonts.bodyBold }}>{sosStatus.responder_name}</Text>
             </Text>
           )}
           {sosStatus?.distance_km != null && (
             <Text style={styles.sosStatusEta}>
-              {sosStatus.distance_km < 1 ? `${Math.round(sosStatus.distance_km * 1000)} m` : `${sosStatus.distance_km.toFixed(1)} km`} away
-              {sosStatus.duration_min != null ? ` · ~${Math.round(sosStatus.duration_min)} min` : ""}
+              {t(sosStatus.distance_km < 1 ? "safety.distanceMetersAway" : "safety.distanceKmAway", {
+                value: sosStatus.distance_km < 1 ? Math.round(sosStatus.distance_km * 1000) : sosStatus.distance_km.toFixed(1),
+              })}
+              {sosStatus.duration_min != null ? t("safety.etaSuffix", { minutes: Math.round(sosStatus.duration_min) }) : ""}
             </Text>
           )}
           <TouchableOpacity style={styles.cancelSosButton} onPress={handleCancelSOS} disabled={cancelling}>
-            {cancelling ? <ActivityIndicator color={colors.redDeep} /> : <Text style={styles.cancelSosButtonText}>I'm safe — cancel</Text>}
+            {cancelling ? <ActivityIndicator color={colors.redDeep} /> : <Text style={styles.cancelSosButtonText}>{t("safety.cancel")}</Text>}
           </TouchableOpacity>
         </Card>
       )}

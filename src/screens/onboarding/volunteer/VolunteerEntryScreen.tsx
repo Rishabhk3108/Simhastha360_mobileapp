@@ -1,30 +1,33 @@
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
 import { colors, fonts } from "../../../theme";
 import type { OnboardingStackParamList } from "../../../navigation/AppStack";
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, "VolunteerEntry">;
 
 export function VolunteerEntryScreen({ navigation }: Props) {
+  const { t } = useTranslation();
+
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.content}>
         <View style={styles.iconWrap}>
           <Ionicons name="hand-left-outline" size={36} color={colors.surface} />
         </View>
-        <Text style={styles.title}>Volunteer with Simhastha 360</Text>
-        <Text style={styles.subtitle}>Already a registered volunteer, or joining for the first time?</Text>
+        <Text style={styles.title}>{t("volunteerEntry.title")}</Text>
+        <Text style={styles.subtitle}>{t("volunteerEntry.subtitle")}</Text>
 
         <TouchableOpacity style={styles.primaryButton} onPress={() => navigation.navigate("VolunteerLogin")}>
-          <Text style={styles.primaryButtonText}>Login as Volunteer</Text>
+          <Text style={styles.primaryButtonText}>{t("volunteerEntry.login")}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate("VolunteerRegister")}>
-          <Text style={styles.secondaryButtonText}>Register as Volunteer</Text>
+          <Text style={styles.secondaryButtonText}>{t("volunteerEntry.register")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.backLink} onPress={() => navigation.goBack()}>
-          <Text style={styles.backLinkText}>Back</Text>
+          <Text style={styles.backLinkText}>{t("common.back")}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

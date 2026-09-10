@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
 import { PilgrimFieldsSection } from "./PilgrimFieldsSection";
 import { emptyPilgrimFields } from "./types";
 import { registerPilgrim } from "../../api/pilgrims";
@@ -11,6 +12,7 @@ import type { OnboardingStackParamList } from "../../navigation/AppStack";
 type Props = NativeStackScreenProps<OnboardingStackParamList, "PilgrimRegister">;
 
 export function PilgrimRegisterScreen({ navigation }: Props) {
+  const { t } = useTranslation();
   const [pilgrim, setPilgrim] = useState(emptyPilgrimFields);
   const [passwordValid, setPasswordValid] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -18,11 +20,11 @@ export function PilgrimRegisterScreen({ navigation }: Props) {
 
   async function submit() {
     if (!pilgrim.name || !pilgrim.phone || !pilgrim.aadharNumber || !pilgrim.age || !pilgrim.addressLine1 || !pilgrim.city || !pilgrim.state || !pilgrim.pincode) {
-      Alert.alert("Missing details", "Please fill in your name, phone, Aadhar number, age, and address.");
+      Alert.alert(t("pilgrimRegister.missingTitle"), t("pilgrimRegister.missingBody"));
       return;
     }
     if (!passwordValid) {
-      Alert.alert("Password required", "Choose a password of at least 8 characters, and confirm it.");
+      Alert.alert(t("pilgrimRegister.passwordRequiredTitle"), t("pilgrimRegister.passwordRequiredBody"));
       return;
     }
     setSubmitting(true);
@@ -32,15 +34,15 @@ export function PilgrimRegisterScreen({ navigation }: Props) {
       navigation.replace("Main");
     } catch (err: any) {
       if (err.code === "ECONNABORTED") {
-        Alert.alert("Taking too long", "The request timed out — check your connection and try again. A smaller photo helps too.");
+        Alert.alert(t("pilgrimRegister.timeoutTitle"), t("pilgrimRegister.timeoutBody"));
       } else if (err.response?.status === 409) {
-        Alert.alert("Account already exists", "An account with this Aadhar number already exists. Please sign in instead.");
+        Alert.alert(t("pilgrimRegister.existsTitle"), t("pilgrimRegister.existsBody"));
       } else if (err.response?.status === 422) {
-        Alert.alert("Missing or invalid details", "Please check every field is filled in correctly.");
+        Alert.alert(t("pilgrimRegister.invalidTitle"), t("pilgrimRegister.invalidBody"));
       } else if (!err.response) {
-        Alert.alert("No connection", "Couldn't reach the server. Check your internet connection and try again.");
+        Alert.alert(t("common.noConnectionTitle"), t("common.noConnectionBody"));
       } else {
-        Alert.alert("Could not register", "Something went wrong on the server. Please try again.");
+        Alert.alert(t("pilgrimRegister.errorTitle"), t("common.tryAgain"));
       }
     } finally {
       setSubmitting(false);
@@ -50,15 +52,13 @@ export function PilgrimRegisterScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Register as Pilgrim</Text>
-        <Text style={styles.subtitle}>
-          Your details. You can add a guardian who'll get live safety updates on you afterward, from your profile.
-        </Text>
+        <Text style={styles.title}>{t("pilgrimRegister.title")}</Text>
+        <Text style={styles.subtitle}>{t("pilgrimRegister.subtitle")}</Text>
 
-        <PilgrimFieldsSection values={pilgrim} onChange={setPilgrim} onPasswordValidityChange={setPasswordValid} title="Your details" />
+        <PilgrimFieldsSection values={pilgrim} onChange={setPilgrim} onPasswordValidityChange={setPasswordValid} title={t("pilgrimRegister.sectionTitle")} />
 
         <TouchableOpacity style={styles.submitButton} onPress={submit} disabled={submitting}>
-          <Text style={styles.submitButtonText}>{submitting ? "Registering..." : "Complete registration"}</Text>
+          <Text style={styles.submitButtonText}>{submitting ? t("pilgrimRegister.submitting") : t("pilgrimRegister.submit")}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

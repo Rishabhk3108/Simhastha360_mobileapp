@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { colors, fonts } from "../../theme";
 import { PasswordStrengthMeter } from "../../components/PasswordStrengthMeter";
 import { TextInput } from "../../components/AppTextInput";
@@ -16,7 +17,8 @@ interface Props {
 
 const MIN_PASSWORD_LENGTH = 8;
 
-export function PilgrimFieldsSection({ values, onChange, onPasswordValidityChange, title = "Pilgrim details" }: Props) {
+export function PilgrimFieldsSection({ values, onChange, onPasswordValidityChange, title }: Props) {
+  const { t } = useTranslation();
   const [confirmPassword, setConfirmPassword] = useState("");
 
   function set<K extends keyof PilgrimFields>(key: K, value: PilgrimFields[K]) {
@@ -58,42 +60,42 @@ export function PilgrimFieldsSection({ values, onChange, onPasswordValidityChang
 
   return (
     <View style={{ gap: 10 }}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      <Text style={styles.sectionTitle}>{title ?? t("pilgrimFields.defaultTitle")}</Text>
 
       <TouchableOpacity style={styles.photoPicker} onPress={pickPhoto}>
         {values.photoBase64 ? (
           <Image source={{ uri: values.photoBase64 }} style={styles.photoPreview} />
         ) : (
-          <Text style={styles.photoPickerText}>Add photo</Text>
+          <Text style={styles.photoPickerText}>{t("pilgrimFields.addPhoto")}</Text>
         )}
       </TouchableOpacity>
 
-      <TextInput style={styles.input} placeholder="Full name" value={values.name} onChangeText={(v) => set("name", v)} />
-      <TextInput style={styles.input} placeholder="Phone number" value={values.phone} onChangeText={(v) => set("phone", v)} keyboardType="phone-pad" />
-      <TextInput style={styles.input} placeholder="Age" value={values.age} onChangeText={(v) => set("age", v)} keyboardType="number-pad" />
-      <TextInput style={styles.input} placeholder="Aadhar number" value={values.aadharNumber} onChangeText={(v) => set("aadharNumber", v)} keyboardType="number-pad" maxLength={12} />
-      <TextInput style={styles.input} placeholder="Samagra ID (optional)" value={values.samagraId} onChangeText={(v) => set("samagraId", v)} />
+      <TextInput style={styles.input} placeholder={t("pilgrimFields.fullName")} value={values.name} onChangeText={(v) => set("name", v)} />
+      <TextInput style={styles.input} placeholder={t("pilgrimFields.phone")} value={values.phone} onChangeText={(v) => set("phone", v)} keyboardType="phone-pad" />
+      <TextInput style={styles.input} placeholder={t("pilgrimFields.age")} value={values.age} onChangeText={(v) => set("age", v)} keyboardType="number-pad" />
+      <TextInput style={styles.input} placeholder={t("pilgrimFields.aadhar")} value={values.aadharNumber} onChangeText={(v) => set("aadharNumber", v)} keyboardType="number-pad" maxLength={12} />
+      <TextInput style={styles.input} placeholder={t("pilgrimFields.samagraId")} value={values.samagraId} onChangeText={(v) => set("samagraId", v)} />
 
-      <TextInput style={styles.input} placeholder="Password" value={values.password} onChangeText={(v) => set("password", v)} secureTextEntry />
+      <TextInput style={styles.input} placeholder={t("common.passwordPlaceholder")} value={values.password} onChangeText={(v) => set("password", v)} secureTextEntry />
       <PasswordStrengthMeter password={values.password} />
-      <TextInput style={styles.input} placeholder="Confirm password" value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry />
-      {showMismatch && <Text style={styles.errorText}>Passwords don't match.</Text>}
+      <TextInput style={styles.input} placeholder={t("common.confirmPasswordPlaceholder")} value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry />
+      {showMismatch && <Text style={styles.errorText}>{t("pilgrimFields.passwordMismatch")}</Text>}
 
-      <Text style={styles.subTitle}>Address</Text>
-      <TextInput style={styles.input} placeholder="Address line 1" value={values.addressLine1} onChangeText={(v) => set("addressLine1", v)} />
-      <TextInput style={styles.input} placeholder="Address line 2 (optional)" value={values.addressLine2} onChangeText={(v) => set("addressLine2", v)} />
+      <Text style={styles.subTitle}>{t("pilgrimFields.addressTitle")}</Text>
+      <TextInput style={styles.input} placeholder={t("pilgrimFields.addressLine1")} value={values.addressLine1} onChangeText={(v) => set("addressLine1", v)} />
+      <TextInput style={styles.input} placeholder={t("pilgrimFields.addressLine2")} value={values.addressLine2} onChangeText={(v) => set("addressLine2", v)} />
       <View style={styles.row}>
-        <TextInput style={[styles.input, styles.rowInput]} placeholder="City" value={values.city} onChangeText={(v) => set("city", v)} />
-        <TextInput style={[styles.input, styles.rowInput]} placeholder="State" value={values.state} onChangeText={(v) => set("state", v)} />
+        <TextInput style={[styles.input, styles.rowInput]} placeholder={t("pilgrimFields.city")} value={values.city} onChangeText={(v) => set("city", v)} />
+        <TextInput style={[styles.input, styles.rowInput]} placeholder={t("pilgrimFields.state")} value={values.state} onChangeText={(v) => set("state", v)} />
       </View>
       <View style={styles.row}>
-        <TextInput style={[styles.input, styles.rowInput]} placeholder="Pincode" value={values.pincode} onChangeText={(v) => set("pincode", v)} keyboardType="number-pad" />
-        <TextInput style={[styles.input, styles.rowInput]} placeholder="Country" value={values.country} onChangeText={(v) => set("country", v)} />
+        <TextInput style={[styles.input, styles.rowInput]} placeholder={t("pilgrimFields.pincode")} value={values.pincode} onChangeText={(v) => set("pincode", v)} keyboardType="number-pad" />
+        <TextInput style={[styles.input, styles.rowInput]} placeholder={t("pilgrimFields.country")} value={values.country} onChangeText={(v) => set("country", v)} />
       </View>
 
       <TextInput
         style={[styles.input, styles.multiline]}
-        placeholder="Any serious medical history (optional)"
+        placeholder={t("pilgrimFields.medicalHistory")}
         value={values.medicalHistory}
         onChangeText={(v) => set("medicalHistory", v)}
         multiline

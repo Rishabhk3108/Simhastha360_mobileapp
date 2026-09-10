@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ActivityIndicator, Alert, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { useTranslation } from "react-i18next";
 import * as ImageManipulator from "expo-image-manipulator";
 import { Camera, X } from "./icons";
 import { TextInput } from "./AppTextInput";
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export function ReportIssueModal({ visible, onClose }: Props) {
+  const { t } = useTranslation();
   const { refresh } = useLocation();
   const [photos, setPhotos] = useState<string[]>([]);
   const [description, setDescription] = useState("");
@@ -39,7 +41,7 @@ export function ReportIssueModal({ visible, onClose }: Props) {
   async function capturePhoto() {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert("Camera permission needed", "Please allow camera access to attach a photo.");
+      Alert.alert(t("reportIssueModal.permissionTitle"), t("reportIssueModal.permissionBody"));
       return;
     }
     setCapturing(true);
@@ -52,7 +54,7 @@ export function ReportIssueModal({ visible, onClose }: Props) {
       });
       setPhotos((p) => [...p, resized.uri]);
     } catch {
-      Alert.alert("Could not capture photo", "Please try again.");
+      Alert.alert(t("reportIssueModal.captureFailedTitle"), t("common.tryAgain"));
     } finally {
       setCapturing(false);
     }
@@ -79,9 +81,9 @@ export function ReportIssueModal({ visible, onClose }: Props) {
         lng: coords?.lng,
       });
       handleClose();
-      Alert.alert("Issue submitted", "Thank you. Our team will look into it at the earliest.");
+      Alert.alert(t("reportIssueModal.submittedTitle"), t("reportIssueModal.submittedBody"));
     } catch {
-      Alert.alert("Could not submit", "Please try again.");
+      Alert.alert(t("reportIssueModal.submitFailedTitle"), t("common.tryAgain"));
     } finally {
       setSubmitting(false);
     }
@@ -91,15 +93,12 @@ export function ReportIssueModal({ visible, onClose }: Props) {
     <Modal visible={visible} animationType="slide" onRequestClose={handleClose}>
       <View style={styles.root}>
         <View style={styles.header}>
-          <Text style={styles.title}>Report an issue</Text>
+          <Text style={styles.title}>{t("reportIssueModal.title")}</Text>
           <TouchableOpacity onPress={handleClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <X size={22} color={colors.ink} weight="bold" />
           </TouchableOpacity>
         </View>
-        <Text style={styles.subtitle}>
-          Spotted something wrong - a hazard, a broken facility, anything that needs attention? Add a photo and we'll pass it
-          to our team, along with your current location.
-        </Text>
+        <Text style={styles.subtitle}>{t("reportIssueModal.subtitle")}</Text>
 
         <ScrollView contentContainerStyle={styles.grid}>
           {photos.map((uri, i) => (
@@ -112,13 +111,13 @@ export function ReportIssueModal({ visible, onClose }: Props) {
           ))}
           <TouchableOpacity style={styles.addTile} onPress={capturePhoto} disabled={capturing}>
             {capturing ? <ActivityIndicator color={colors.ink} /> : <Camera size={26} color={colors.muted} />}
-            <Text style={styles.addTileText}>Add photo</Text>
+            <Text style={styles.addTileText}>{t("reportIssueModal.addPhoto")}</Text>
           </TouchableOpacity>
         </ScrollView>
 
         <TextInput
           style={styles.descriptionInput}
-          placeholder="Describe what's wrong (optional)"
+          placeholder={t("reportIssueModal.descriptionPlaceholder")}
           value={description}
           onChangeText={setDescription}
           multiline
@@ -130,7 +129,7 @@ export function ReportIssueModal({ visible, onClose }: Props) {
           onPress={submit}
           disabled={photos.length < MIN_REPORT_PHOTOS || submitting}
         >
-          {submitting ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.submitButtonText}>Submit report</Text>}
+          {submitting ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.submitButtonText}>{t("reportIssueModal.submit")}</Text>}
         </TouchableOpacity>
       </View>
     </Modal>

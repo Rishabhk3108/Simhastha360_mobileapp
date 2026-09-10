@@ -13,8 +13,10 @@ import {
   DMSans_500Medium,
   DMSans_700Bold,
 } from "@expo-google-fonts/dm-sans";
+import "./src/i18n";
 import { AuthProvider, useAuth } from "./src/auth/AuthContext";
 import { PilgrimProvider, usePilgrim } from "./src/pilgrim/PilgrimContext";
+import { LanguageProvider, useLanguage } from "./src/language/LanguageContext";
 import { AppStack } from "./src/navigation/AppStack";
 import { colors } from "./src/theme";
 
@@ -23,7 +25,8 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 function Gate({ fontsReady }: { fontsReady: boolean }) {
   const { ready: authReady } = useAuth();
   const { ready: pilgrimReady } = usePilgrim();
-  const ready = authReady && pilgrimReady;
+  const { ready: languageReady, hasChosenLanguage } = useLanguage();
+  const ready = authReady && pilgrimReady && languageReady;
   const onLayout = useCallback(async () => {
     if (ready && fontsReady) {
       await SplashScreen.hideAsync();
@@ -35,7 +38,7 @@ function Gate({ fontsReady }: { fontsReady: boolean }) {
   }, [onLayout]);
 
   if (!ready || !fontsReady) return null;
-  return <AppStack />;
+  return <AppStack initialRouteName={hasChosenLanguage ? "Splash" : "LanguageSelection"} />;
 }
 
 export default function App() {
@@ -47,14 +50,16 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <View style={{ flex: 1, backgroundColor: colors.bg }}>
-        <AuthProvider>
-          <PilgrimProvider>
-            <NavigationContainer>
-              <Gate fontsReady={fontsReady} />
-              <StatusBar style="dark" />
-            </NavigationContainer>
-          </PilgrimProvider>
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <PilgrimProvider>
+              <NavigationContainer>
+                <Gate fontsReady={fontsReady} />
+                <StatusBar style="dark" />
+              </NavigationContainer>
+            </PilgrimProvider>
+          </AuthProvider>
+        </LanguageProvider>
       </View>
     </SafeAreaProvider>
   );

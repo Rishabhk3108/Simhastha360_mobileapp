@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ActivityIndicator, Alert, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
 import { colors, fonts } from "../../../theme";
 import { useAuth } from "../../../auth/AuthContext";
 import { registerGuardian } from "../../../api/guardians";
@@ -9,6 +10,7 @@ import type { OnboardingStackParamList } from "../../../navigation/AppStack";
 type Props = NativeStackScreenProps<OnboardingStackParamList, "GuardianRegister">;
 
 export function GuardianRegisterScreen({ navigation }: Props) {
+  const { t } = useTranslation();
   const { login } = useAuth();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -18,15 +20,15 @@ export function GuardianRegisterScreen({ navigation }: Props) {
 
   async function submit() {
     if (!name.trim() || !phone.trim()) {
-      Alert.alert("Missing details", "Please enter your name and phone number.");
+      Alert.alert(t("guardianRegister.missingTitle"), t("guardianRegister.missingBody"));
       return;
     }
     if (password.length < 8) {
-      Alert.alert("Password too short", "Choose a password of at least 8 characters.");
+      Alert.alert(t("guardianRegister.shortPasswordTitle"), t("guardianRegister.shortPasswordBody"));
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert("Passwords don't match", "Please re-enter your password.");
+      Alert.alert(t("guardianRegister.mismatchTitle"), t("guardianRegister.mismatchBody"));
       return;
     }
     setSubmitting(true);
@@ -36,11 +38,11 @@ export function GuardianRegisterScreen({ navigation }: Props) {
       navigation.replace("Main");
     } catch (err: any) {
       if (err.response?.status === 400) {
-        Alert.alert("Phone already registered", "This phone number already has an account. Try signing in instead.");
+        Alert.alert(t("guardianRegister.existsTitle"), t("guardianRegister.existsBody"));
       } else if (!err.response) {
-        Alert.alert("No connection", "Couldn't reach the server. Check your internet connection and try again.");
+        Alert.alert(t("common.noConnectionTitle"), t("common.noConnectionBody"));
       } else {
-        Alert.alert("Could not register", "Something went wrong. Please try again.");
+        Alert.alert(t("guardianRegister.errorTitle"), t("common.tryAgain"));
       }
     } finally {
       setSubmitting(false);
@@ -50,21 +52,19 @@ export function GuardianRegisterScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.content}>
-        <Text style={styles.title}>Register as Guardian</Text>
-        <Text style={styles.subtitle}>
-          Once registered, you can add family members by scanning a QR code from their app to get live safety updates.
-        </Text>
+        <Text style={styles.title}>{t("guardianRegister.title")}</Text>
+        <Text style={styles.subtitle}>{t("guardianRegister.subtitle")}</Text>
 
         <TextInput
           style={styles.input}
-          placeholder="Your name"
+          placeholder={t("guardianRegister.yourName")}
           placeholderTextColor={colors.muted2}
           value={name}
           onChangeText={setName}
         />
         <TextInput
           style={styles.input}
-          placeholder="Phone number"
+          placeholder={t("common.phonePlaceholder")}
           placeholderTextColor={colors.muted2}
           value={phone}
           onChangeText={setPhone}
@@ -72,7 +72,7 @@ export function GuardianRegisterScreen({ navigation }: Props) {
         />
         <TextInput
           style={styles.input}
-          placeholder="Password"
+          placeholder={t("common.passwordPlaceholder")}
           placeholderTextColor={colors.muted2}
           value={password}
           onChangeText={setPassword}
@@ -80,7 +80,7 @@ export function GuardianRegisterScreen({ navigation }: Props) {
         />
         <TextInput
           style={styles.input}
-          placeholder="Confirm password"
+          placeholder={t("common.confirmPasswordPlaceholder")}
           placeholderTextColor={colors.muted2}
           value={confirmPassword}
           onChangeText={setConfirmPassword}
@@ -88,11 +88,11 @@ export function GuardianRegisterScreen({ navigation }: Props) {
         />
 
         <TouchableOpacity style={styles.primaryButton} onPress={submit} disabled={submitting}>
-          {submitting ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.primaryButtonText}>Register</Text>}
+          {submitting ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.primaryButtonText}>{t("common.register")}</Text>}
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.backLink} onPress={() => navigation.goBack()}>
-          <Text style={styles.backLinkText}>Back</Text>
+          <Text style={styles.backLinkText}>{t("common.back")}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

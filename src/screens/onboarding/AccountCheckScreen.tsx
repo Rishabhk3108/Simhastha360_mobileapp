@@ -1,26 +1,29 @@
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { colors, fonts } from "../../theme";
 import type { OnboardingStackParamList } from "../../navigation/AppStack";
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, "AccountCheck">;
 
 export function AccountCheckScreen({ navigation }: Props) {
+  const { t } = useTranslation();
+
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.content}>
         <View style={styles.iconWrap}>
           <Ionicons name="person-circle-outline" size={40} color={colors.saffronDeep} />
         </View>
-        <Text style={styles.title}>Do you already have an account?</Text>
-        <Text style={styles.subtitle}>Sign in with the pilgrim's Aadhar number and password, or register for the first time.</Text>
+        <Text style={styles.title}>{t("accountCheck.title")}</Text>
+        <Text style={styles.subtitle}>{t("accountCheck.subtitle")}</Text>
 
         <TouchableOpacity style={styles.primaryButton} onPress={() => navigation.navigate("SignIn")}>
-          <Text style={styles.primaryButtonText}>Yes, sign me in</Text>
+          <Text style={styles.primaryButtonText}>{t("accountCheck.yes")}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate("PilgrimRegister")}>
-          <Text style={styles.secondaryButtonText}>No, this is my first time</Text>
+          <Text style={styles.secondaryButtonText}>{t("accountCheck.no")}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { Card } from "./Card";
 import { AddGuardianModal } from "./AddGuardianModal";
 import { usePilgrim } from "../pilgrim/PilgrimContext";
@@ -27,6 +28,7 @@ function DetailRow({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMa
 }
 
 export function PilgrimProfileCard() {
+  const { t } = useTranslation();
   const { profile, clearProfile } = usePilgrim();
   const [expanded, setExpanded] = useState(false);
   const [addGuardianVisible, setAddGuardianVisible] = useState(false);
@@ -40,10 +42,10 @@ export function PilgrimProfileCard() {
     .join(", ");
 
   function confirmLogout() {
-    Alert.alert("Log out?", "You can sign back in anytime with your Aadhar number and password.", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("common.logOutConfirmTitle"), t("pilgrimProfileCard.logOutBody"), [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Log out",
+        text: t("common.logOut"),
         style: "destructive",
         onPress: async () => {
           await clearProfile();
@@ -65,28 +67,28 @@ export function PilgrimProfileCard() {
         )}
         <View style={{ flex: 1 }}>
           <Text style={styles.name}>{pilgrim.name}</Text>
-          <Text style={styles.subtitle}>Pilgrim · Age {pilgrim.age}</Text>
+          <Text style={styles.subtitle}>{t("pilgrimProfileCard.subtitle", { age: pilgrim.age })}</Text>
         </View>
         <Ionicons name={expanded ? "chevron-up" : "chevron-down"} size={20} color={colors.muted} />
       </TouchableOpacity>
 
       {expanded && (
         <View style={styles.details}>
-          <DetailRow icon="call-outline" label="Phone" value={pilgrim.phone} />
-          <DetailRow icon="card-outline" label="Aadhar" value={maskAadhar(pilgrim.aadharNumber)} />
-          {!!pilgrim.samagraId && <DetailRow icon="document-text-outline" label="Samagra ID" value={pilgrim.samagraId} />}
-          <DetailRow icon="location-outline" label="Address" value={address} />
-          {!!pilgrim.medicalHistory && <DetailRow icon="medkit-outline" label="Medical history" value={pilgrim.medicalHistory} />}
+          <DetailRow icon="call-outline" label={t("pilgrimProfileCard.phone")} value={pilgrim.phone} />
+          <DetailRow icon="card-outline" label={t("pilgrimProfileCard.aadhar")} value={maskAadhar(pilgrim.aadharNumber)} />
+          {!!pilgrim.samagraId && <DetailRow icon="document-text-outline" label={t("pilgrimProfileCard.samagraId")} value={pilgrim.samagraId} />}
+          <DetailRow icon="location-outline" label={t("pilgrimProfileCard.address")} value={address} />
+          {!!pilgrim.medicalHistory && <DetailRow icon="medkit-outline" label={t("pilgrimProfileCard.medicalHistory")} value={pilgrim.medicalHistory} />}
 
           <View style={styles.divider} />
           <TouchableOpacity style={styles.addGuardianButton} onPress={() => setAddGuardianVisible(true)}>
             <Ionicons name="qr-code-outline" size={16} color={colors.teal} />
-            <Text style={styles.addGuardianButtonText}>Add guardian</Text>
+            <Text style={styles.addGuardianButtonText}>{t("pilgrimProfileCard.addGuardian")}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.logoutButton} onPress={confirmLogout}>
             <Ionicons name="log-out-outline" size={16} color={colors.redDeep} />
-            <Text style={styles.logoutButtonText}>Log out</Text>
+            <Text style={styles.logoutButtonText}>{t("common.logOut")}</Text>
           </TouchableOpacity>
         </View>
       )}

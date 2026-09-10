@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ActivityIndicator, Alert, Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import { useTranslation } from "react-i18next";
 import { X } from "./icons";
 import { linkPilgrimByToken } from "../api/guardians";
 import { colors, fonts } from "../theme";
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export function ScanPilgrimModal({ visible, onClose, onLinked }: Props) {
+  const { t } = useTranslation();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanning, setScanning] = useState(true);
   const [linking, setLinking] = useState(false);
@@ -36,9 +38,9 @@ export function ScanPilgrimModal({ visible, onClose, onLinked }: Props) {
       onLinked();
     } catch (err: any) {
       Alert.alert(
-        "Could not add this member",
-        err.response?.data?.detail ?? "This code may have expired. Ask them to generate a new one and try again.",
-        [{ text: "OK", onPress: () => setScanning(true) }],
+        t("scanPilgrimModal.errorTitle"),
+        err.response?.data?.detail ?? t("scanPilgrimModal.errorBody"),
+        [{ text: t("home.ok"), onPress: () => setScanning(true) }],
       );
       setLinking(false);
     }
@@ -48,7 +50,7 @@ export function ScanPilgrimModal({ visible, onClose, onLinked }: Props) {
     <Modal visible={visible} animationType="slide" onRequestClose={handleClose}>
       <View style={styles.root}>
         <View style={styles.header}>
-          <Text style={styles.title}>Scan QR code</Text>
+          <Text style={styles.title}>{t("scanPilgrimModal.title")}</Text>
           <TouchableOpacity onPress={handleClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <X size={22} color={colors.surface} weight="bold" />
           </TouchableOpacity>
@@ -60,9 +62,9 @@ export function ScanPilgrimModal({ visible, onClose, onLinked }: Props) {
           </View>
         ) : !permission.granted ? (
           <View style={styles.center}>
-            <Text style={styles.permissionText}>Camera access is needed to scan the pilgrim's code.</Text>
+            <Text style={styles.permissionText}>{t("scanPilgrimModal.permissionText")}</Text>
             <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
-              <Text style={styles.permissionButtonText}>Allow camera access</Text>
+              <Text style={styles.permissionButtonText}>{t("scanPilgrimModal.allowCamera")}</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -75,9 +77,7 @@ export function ScanPilgrimModal({ visible, onClose, onLinked }: Props) {
             />
             <View style={styles.frameOverlay}>
               <View style={styles.frame} />
-              <Text style={styles.hint}>
-                {linking ? "Adding member…" : "Point your camera at the pilgrim's QR code"}
-              </Text>
+              <Text style={styles.hint}>{linking ? t("scanPilgrimModal.addingMember") : t("scanPilgrimModal.hint")}</Text>
               {linking && <ActivityIndicator color={colors.surface} style={{ marginTop: 12 }} />}
             </View>
           </>

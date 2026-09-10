@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
 import { loginPilgrim } from "../../api/pilgrims";
 import { usePilgrim } from "../../pilgrim/PilgrimContext";
 import { colors, fonts } from "../../theme";
@@ -10,6 +11,7 @@ import type { OnboardingStackParamList } from "../../navigation/AppStack";
 type Props = NativeStackScreenProps<OnboardingStackParamList, "SignIn">;
 
 export function SignInScreen({ navigation }: Props) {
+  const { t } = useTranslation();
   const [aadharNumber, setAadharNumber] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -17,7 +19,7 @@ export function SignInScreen({ navigation }: Props) {
 
   async function submit() {
     if (!aadharNumber || !password) {
-      Alert.alert("Missing details", "Enter your Aadhar number and password.");
+      Alert.alert(t("signIn.missingTitle"), t("signIn.missingBody"));
       return;
     }
     setSubmitting(true);
@@ -27,11 +29,11 @@ export function SignInScreen({ navigation }: Props) {
       navigation.replace("Main");
     } catch (err: any) {
       if (err.response?.status === 401) {
-        Alert.alert("Sign in failed", "Incorrect Aadhar number or password.");
+        Alert.alert(t("signIn.failedTitle"), t("signIn.failedBody"));
       } else if (!err.response) {
-        Alert.alert("No connection", "Couldn't reach the server. Check your internet connection and try again.");
+        Alert.alert(t("common.noConnectionTitle"), t("common.noConnectionBody"));
       } else {
-        Alert.alert("Could not sign in", "Something went wrong. Please try again.");
+        Alert.alert(t("signIn.errorTitle"), t("common.tryAgain"));
       }
     } finally {
       setSubmitting(false);
@@ -40,14 +42,14 @@ export function SignInScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <Text style={styles.title}>Sign in</Text>
-      <Text style={styles.subtitle}>Use the Aadhar number and password from your pilgrim registration.</Text>
+      <Text style={styles.title}>{t("signIn.title")}</Text>
+      <Text style={styles.subtitle}>{t("signIn.subtitle")}</Text>
 
-      <TextInput style={styles.input} placeholder="Aadhar number" value={aadharNumber} onChangeText={setAadharNumber} keyboardType="number-pad" maxLength={12} />
-      <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
+      <TextInput style={styles.input} placeholder={t("signIn.aadharPlaceholder")} value={aadharNumber} onChangeText={setAadharNumber} keyboardType="number-pad" maxLength={12} />
+      <TextInput style={styles.input} placeholder={t("common.passwordPlaceholder")} value={password} onChangeText={setPassword} secureTextEntry />
 
       <TouchableOpacity style={styles.primaryButton} onPress={submit} disabled={submitting}>
-        <Text style={styles.primaryButtonText}>{submitting ? "Signing in..." : "Sign in"}</Text>
+        <Text style={styles.primaryButtonText}>{submitting ? t("signIn.submitting") : t("signIn.submit")}</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );

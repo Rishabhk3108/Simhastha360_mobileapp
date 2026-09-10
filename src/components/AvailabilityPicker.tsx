@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { X } from "./icons";
 import { colors, fonts } from "../theme";
 import type { AvailabilitySlot } from "../api/volunteers";
@@ -37,6 +38,7 @@ interface Props {
 }
 
 export function AvailabilityPicker({ slots, onChange }: Props) {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
   const [date, setDate] = useState<string | null>(null);
   const [startTime, setStartTime] = useState<string | null>(null);
@@ -74,15 +76,15 @@ export function AvailabilityPicker({ slots, onChange }: Props) {
       ))}
 
       <TouchableOpacity style={styles.addButton} onPress={openPicker}>
-        <Text style={styles.addButtonText}>+ Add availability</Text>
+        <Text style={styles.addButtonText}>{t("availabilityPicker.addAvailability")}</Text>
       </TouchableOpacity>
 
       <Modal visible={visible} transparent animationType="slide" onRequestClose={() => setVisible(false)}>
         <View style={styles.backdrop}>
           <View style={styles.sheet}>
-            <Text style={styles.sheetTitle}>Add availability</Text>
+            <Text style={styles.sheetTitle}>{t("availabilityPicker.sheetTitle")}</Text>
 
-            <Text style={styles.label}>Date</Text>
+            <Text style={styles.label}>{t("availabilityPicker.date")}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
               {dates.map((d) => (
                 <TouchableOpacity
@@ -95,40 +97,40 @@ export function AvailabilityPicker({ slots, onChange }: Props) {
               ))}
             </ScrollView>
 
-            <Text style={styles.label}>Start time</Text>
+            <Text style={styles.label}>{t("availabilityPicker.startTime")}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
-              {HOUR_OPTIONS.map((t) => (
+              {HOUR_OPTIONS.map((hour) => (
                 <TouchableOpacity
-                  key={t}
-                  style={[styles.chip, startTime === t && styles.chipActive]}
-                  onPress={() => setStartTime(t)}
+                  key={hour}
+                  style={[styles.chip, startTime === hour && styles.chipActive]}
+                  onPress={() => setStartTime(hour)}
                 >
-                  <Text style={[styles.chipText, startTime === t && styles.chipTextActive]}>{t}</Text>
+                  <Text style={[styles.chipText, startTime === hour && styles.chipTextActive]}>{hour}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
 
-            <Text style={styles.label}>End time</Text>
+            <Text style={styles.label}>{t("availabilityPicker.endTime")}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
-              {HOUR_OPTIONS.map((t) => (
+              {HOUR_OPTIONS.map((hour) => (
                 <TouchableOpacity
-                  key={t}
-                  style={[styles.chip, endTime === t && styles.chipActive]}
-                  onPress={() => setEndTime(t)}
+                  key={hour}
+                  style={[styles.chip, endTime === hour && styles.chipActive]}
+                  onPress={() => setEndTime(hour)}
                 >
-                  <Text style={[styles.chipText, endTime === t && styles.chipTextActive]}>{t}</Text>
+                  <Text style={[styles.chipText, endTime === hour && styles.chipTextActive]}>{hour}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
             {startTime && endTime && startTime >= endTime && (
-              <Text style={styles.errorText}>End time must be after start time.</Text>
+              <Text style={styles.errorText}>{t("availabilityPicker.endBeforeStart")}</Text>
             )}
 
             <TouchableOpacity style={[styles.doneButton, !canAdd && styles.doneButtonDisabled]} disabled={!canAdd} onPress={addSlot}>
-              <Text style={styles.doneButtonText}>Add</Text>
+              <Text style={styles.doneButtonText}>{t("availabilityPicker.add")}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.cancelButton} onPress={() => setVisible(false)}>
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+              <Text style={styles.cancelButtonText}>{t("common.cancel")}</Text>
             </TouchableOpacity>
           </View>
         </View>

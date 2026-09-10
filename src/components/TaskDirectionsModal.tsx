@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { X } from "./icons";
 import { MapplsMapView, type MapplsMapHandle } from "./MapplsMapView";
 import { getDirections, type RouteResult } from "../api/mappls";
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export function TaskDirectionsModal({ visible, task, onClose, onCompleteTask }: Props) {
+  const { t } = useTranslation();
   const { coords } = useLocation();
   const mapRef = useRef<MapplsMapHandle>(null);
   const [zones, setZones] = useState<Zone[]>([]);
@@ -45,7 +47,7 @@ export function TaskDirectionsModal({ visible, task, onClose, onCompleteTask }: 
         const result = await getDirections(origin, { lat: task.lat!, lng: task.lng! }, zoneRes.data);
         if (cancelled) return;
         setRoute(result);
-        mapRef.current?.setDestination(result.destination.lat, result.destination.lng, "Task location");
+        mapRef.current?.setDestination(result.destination.lat, result.destination.lng, t("taskDirectionsModal.taskLocation"));
         mapRef.current?.drawRoute(result.coordinates);
       } catch {
         // route stays null; UI shows a "couldn't load" state below
@@ -76,9 +78,9 @@ export function TaskDirectionsModal({ visible, task, onClose, onCompleteTask }: 
       <View style={styles.root}>
         {!task?.lat || !task?.lng ? (
           <View style={styles.center}>
-            <Text style={styles.noLocationText}>No location was set for this task. Contact your manager for directions.</Text>
+            <Text style={styles.noLocationText}>{t("taskDirectionsModal.noLocation")}</Text>
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <Text style={styles.closeButtonText}>Close</Text>
+              <Text style={styles.closeButtonText}>{t("taskDirectionsModal.close")}</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -101,19 +103,19 @@ export function TaskDirectionsModal({ visible, task, onClose, onCompleteTask }: 
             {loading && (
               <View style={styles.loadingBanner}>
                 <ActivityIndicator color={colors.surface} />
-                <Text style={styles.loadingText}>Getting directions…</Text>
+                <Text style={styles.loadingText}>{t("taskDirectionsModal.loading")}</Text>
               </View>
             )}
 
             {!loading && currentStep && (
               <View style={styles.navCard}>
                 {arrived ? (
-                  <Text style={styles.navInstruction}>You've arrived at the task location</Text>
+                  <Text style={styles.navInstruction}>{t("taskDirectionsModal.arrived")}</Text>
                 ) : (
                   <>
                     <Text style={styles.navDistance}>{formatDistance(distanceToManeuverM)}</Text>
                     <Text style={styles.navInstruction}>{currentStep.instruction}</Text>
-                    {nextStep && <Text style={styles.navNext}>Then {nextStep.instruction.toLowerCase()}</Text>}
+                    {nextStep && <Text style={styles.navNext}>{t("home.then", { instruction: nextStep.instruction.toLowerCase() })}</Text>}
                   </>
                 )}
               </View>
@@ -122,18 +124,18 @@ export function TaskDirectionsModal({ visible, task, onClose, onCompleteTask }: 
             {!loading && route && (
               <View style={styles.bottomCard}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.routeDuration}>{Math.round(route.durationMin)} min</Text>
-                  <Text style={styles.routeDistance}>{route.distanceKm.toFixed(1)} km to task</Text>
+                  <Text style={styles.routeDuration}>{t("home.minutes", { count: Math.round(route.durationMin) })}</Text>
+                  <Text style={styles.routeDistance}>{t("taskDirectionsModal.distanceToTask", { distance: route.distanceKm.toFixed(1) })}</Text>
                 </View>
                 <TouchableOpacity style={styles.completeButton} onPress={onCompleteTask}>
-                  <Text style={styles.completeButtonText}>Complete task</Text>
+                  <Text style={styles.completeButtonText}>{t("taskDirectionsModal.completeTask")}</Text>
                 </TouchableOpacity>
               </View>
             )}
 
             {!loading && !route && (
               <View style={styles.bottomCard}>
-                <Text style={styles.routeDistance}>Couldn't load directions. Please try again.</Text>
+                <Text style={styles.routeDistance}>{t("taskDirectionsModal.loadFailed")}</Text>
               </View>
             )}
           </>

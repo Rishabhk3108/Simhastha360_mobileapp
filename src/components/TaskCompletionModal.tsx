@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ActivityIndicator, Alert, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
+import { useTranslation } from "react-i18next";
 import { Camera, X } from "./icons";
 import { uploadDocument } from "../api/volunteers";
 import { MIN_COMPLETION_PHOTOS, submitTaskPhotos } from "../api/tasks";
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function TaskCompletionModal({ visible, taskId, onClose, onSubmitted }: Props) {
+  const { t } = useTranslation();
   const [photos, setPhotos] = useState<string[]>([]);
   const [capturing, setCapturing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -33,7 +35,7 @@ export function TaskCompletionModal({ visible, taskId, onClose, onSubmitted }: P
   async function capturePhoto() {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert("Camera permission needed", "Please allow camera access to capture completion photos.");
+      Alert.alert(t("taskCompletionModal.permissionTitle"), t("taskCompletionModal.permissionBody"));
       return;
     }
     setCapturing(true);
@@ -46,7 +48,7 @@ export function TaskCompletionModal({ visible, taskId, onClose, onSubmitted }: P
       });
       setPhotos((p) => [...p, resized.uri]);
     } catch {
-      Alert.alert("Could not capture photo", "Please try again.");
+      Alert.alert(t("reportIssueModal.captureFailedTitle"), t("common.tryAgain"));
     } finally {
       setCapturing(false);
     }
@@ -65,7 +67,7 @@ export function TaskCompletionModal({ visible, taskId, onClose, onSubmitted }: P
       reset();
       onSubmitted();
     } catch {
-      Alert.alert("Could not submit", "Please try again.");
+      Alert.alert(t("taskCompletionModal.submitFailedTitle"), t("common.tryAgain"));
     } finally {
       setSubmitting(false);
     }
@@ -75,15 +77,12 @@ export function TaskCompletionModal({ visible, taskId, onClose, onSubmitted }: P
     <Modal visible={visible} animationType="slide" onRequestClose={handleClose}>
       <View style={styles.root}>
         <View style={styles.header}>
-          <Text style={styles.title}>Complete task</Text>
+          <Text style={styles.title}>{t("taskCompletionModal.title")}</Text>
           <TouchableOpacity onPress={handleClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <X size={22} color={colors.ink} weight="bold" />
           </TouchableOpacity>
         </View>
-        <Text style={styles.subtitle}>
-          Capture at least {MIN_COMPLETION_PHOTOS} photos showing the task is done. Your manager will review them before this task
-          counts as complete.
-        </Text>
+        <Text style={styles.subtitle}>{t("taskCompletionModal.subtitle", { count: MIN_COMPLETION_PHOTOS })}</Text>
 
         <ScrollView contentContainerStyle={styles.grid}>
           {photos.map((uri, i) => (
@@ -96,20 +95,18 @@ export function TaskCompletionModal({ visible, taskId, onClose, onSubmitted }: P
           ))}
           <TouchableOpacity style={styles.addTile} onPress={capturePhoto} disabled={capturing}>
             {capturing ? <ActivityIndicator color={colors.ink} /> : <Camera size={26} color={colors.muted} />}
-            <Text style={styles.addTileText}>Add photo</Text>
+            <Text style={styles.addTileText}>{t("reportIssueModal.addPhoto")}</Text>
           </TouchableOpacity>
         </ScrollView>
 
-        <Text style={styles.count}>
-          {photos.length} / {MIN_COMPLETION_PHOTOS}+ photos
-        </Text>
+        <Text style={styles.count}>{t("taskCompletionModal.photoCount", { count: photos.length, min: MIN_COMPLETION_PHOTOS })}</Text>
 
         <TouchableOpacity
           style={[styles.submitButton, (photos.length < MIN_COMPLETION_PHOTOS || submitting) && styles.submitButtonDisabled]}
           onPress={submit}
           disabled={photos.length < MIN_COMPLETION_PHOTOS || submitting}
         >
-          {submitting ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.submitButtonText}>Submit for review</Text>}
+          {submitting ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.submitButtonText}>{t("taskCompletionModal.submit")}</Text>}
         </TouchableOpacity>
       </View>
     </Modal>

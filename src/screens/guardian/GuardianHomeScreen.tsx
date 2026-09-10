@@ -1,6 +1,8 @@
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { WarningCircle, UsersThree } from "../../components/icons";
 import { Screen } from "../../components/Screen";
 import { Card } from "../../components/Card";
@@ -11,18 +13,19 @@ import { colors, fonts } from "../../theme";
 
 const POLL_INTERVAL_MS = 20000;
 
-function timeAgo(iso: string | null): string {
-  if (!iso) return "No update yet";
+function timeAgo(t: TFunction, iso: string | null): string {
+  if (!iso) return t("guardianHome.noUpdateYet");
   const diffMs = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diffMs / 60000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins} min ago`;
+  if (mins < 1) return t("guardianHome.justNow");
+  if (mins < 60) return t("guardianHome.minAgo", { count: mins });
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} hr ago`;
-  return `${Math.floor(hours / 24)} d ago`;
+  if (hours < 24) return t("guardianHome.hrAgo", { count: hours });
+  return t("guardianHome.dayAgo", { count: Math.floor(hours / 24) });
 }
 
 export function GuardianHomeScreen() {
+  const { t } = useTranslation();
   const [pilgrims, setPilgrims] = useState<LinkedPilgrim[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -49,10 +52,10 @@ export function GuardianHomeScreen() {
   }
 
   return (
-    <Screen title="My people" subtitle="Live safety updates for the family members you're tracking" refreshing={refreshing} onRefresh={onRefresh}>
+    <Screen title={t("guardianHome.title")} subtitle={t("guardianHome.subtitle")} refreshing={refreshing} onRefresh={onRefresh}>
       <TouchableOpacity style={styles.addButton} onPress={() => setScannerVisible(true)}>
         <UsersThree size={18} color={colors.surface} weight="fill" />
-        <Text style={styles.addButtonText}>Add member</Text>
+        <Text style={styles.addButtonText}>{t("guardianHome.addMember")}</Text>
       </TouchableOpacity>
 
       {initialLoading && (
@@ -75,8 +78,8 @@ export function GuardianHomeScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.name}>{p.name}</Text>
                 <Text style={styles.muted}>
-                  {p.age != null ? `Age ${p.age} · ` : ""}
-                  {timeAgo(p.location_updated_at)}
+                  {p.age != null ? t("guardianHome.ageSep", { age: p.age }) : ""}
+                  {timeAgo(t, p.location_updated_at)}
                 </Text>
               </View>
               {p.crowd_level && <CrowdBadge level={p.crowd_level} />}
@@ -85,19 +88,15 @@ export function GuardianHomeScreen() {
             {p.has_active_sos && (
               <View style={styles.sosBanner}>
                 <WarningCircle size={16} color={colors.surface} weight="fill" />
-                <Text style={styles.sosBannerText}>Active SOS alert</Text>
+                <Text style={styles.sosBannerText}>{t("guardianHome.activeSOS")}</Text>
               </View>
             )}
 
-            {p.zone_name && <Text style={styles.zoneText}>Near {p.zone_name}</Text>}
+            {p.zone_name && <Text style={styles.zoneText}>{t("guardianHome.nearZone", { zoneName: p.zone_name })}</Text>}
           </Card>
         ))}
 
-      {!initialLoading && pilgrims.length === 0 && (
-        <Text style={styles.muted}>
-          No one added yet. Tap "Add member" and scan the QR code from the pilgrim's profile screen.
-        </Text>
-      )}
+      {!initialLoading && pilgrims.length === 0 && <Text style={styles.muted}>{t("guardianHome.empty")}</Text>}
 
       <ScanPilgrimModal
         visible={scannerVisible}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { X } from "./icons";
 import { MapplsMapView, type MapplsMapHandle } from "./MapplsMapView";
 import { getDirections, type RouteResult } from "../api/mappls";
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export function SOSDirectionsModal({ visible, destination, onClose, onResolve, resolving }: Props) {
+  const { t } = useTranslation();
   const { coords } = useLocation();
   const mapRef = useRef<MapplsMapHandle>(null);
   const [zones, setZones] = useState<Zone[]>([]);
@@ -46,7 +48,7 @@ export function SOSDirectionsModal({ visible, destination, onClose, onResolve, r
         const result = await getDirections(origin, destination, zoneRes.data);
         if (cancelled) return;
         setRoute(result);
-        mapRef.current?.setDestination(result.destination.lat, result.destination.lng, "Emergency location");
+        mapRef.current?.setDestination(result.destination.lat, result.destination.lng, t("sosDirectionsModal.emergencyLocation"));
         mapRef.current?.drawRoute(result.coordinates);
       } catch {
         // route stays null; UI shows a "couldn't load" state below
@@ -77,17 +79,17 @@ export function SOSDirectionsModal({ visible, destination, onClose, onResolve, r
       <View style={styles.root}>
         {!destination ? (
           <View style={styles.center}>
-            <Text style={styles.noLocationText}>No location available for this emergency.</Text>
+            <Text style={styles.noLocationText}>{t("sosDirectionsModal.noLocation")}</Text>
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <Text style={styles.closeButtonText}>Close</Text>
+              <Text style={styles.closeButtonText}>{t("taskDirectionsModal.close")}</Text>
             </TouchableOpacity>
           </View>
         ) : (
           <>
             <View style={styles.emergencyBanner}>
-              <Text style={styles.emergencyBannerText}>🚨 EMERGENCY RESPONSE</Text>
+              <Text style={styles.emergencyBannerText}>{t("sosDirectionsModal.emergencyResponse")}</Text>
               <TouchableOpacity style={styles.minimizeButton} onPress={onClose}>
-                <Text style={styles.minimizeButtonText}>Minimize</Text>
+                <Text style={styles.minimizeButtonText}>{t("sosDirectionsModal.minimize")}</Text>
               </TouchableOpacity>
             </View>
 
@@ -103,19 +105,19 @@ export function SOSDirectionsModal({ visible, destination, onClose, onResolve, r
             {loading && (
               <View style={styles.loadingBanner}>
                 <ActivityIndicator color={colors.surface} />
-                <Text style={styles.loadingText}>Getting directions…</Text>
+                <Text style={styles.loadingText}>{t("taskDirectionsModal.loading")}</Text>
               </View>
             )}
 
             {!loading && currentStep && (
               <View style={styles.navCard}>
                 {arrived ? (
-                  <Text style={styles.navInstruction}>You've arrived at the emergency location</Text>
+                  <Text style={styles.navInstruction}>{t("sosDirectionsModal.arrived")}</Text>
                 ) : (
                   <>
                     <Text style={styles.navDistance}>{formatDistance(distanceToManeuverM)}</Text>
                     <Text style={styles.navInstruction}>{currentStep.instruction}</Text>
-                    {nextStep && <Text style={styles.navNext}>Then {nextStep.instruction.toLowerCase()}</Text>}
+                    {nextStep && <Text style={styles.navNext}>{t("home.then", { instruction: nextStep.instruction.toLowerCase() })}</Text>}
                   </>
                 )}
               </View>
@@ -124,14 +126,14 @@ export function SOSDirectionsModal({ visible, destination, onClose, onResolve, r
             {!loading && route && (
               <View style={styles.bottomCard}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.routeDuration}>{Math.round(route.durationMin)} min</Text>
-                  <Text style={styles.routeDistance}>{route.distanceKm.toFixed(1)} km to the pilgrim</Text>
+                  <Text style={styles.routeDuration}>{t("home.minutes", { count: Math.round(route.durationMin) })}</Text>
+                  <Text style={styles.routeDistance}>{t("sosDirectionsModal.distanceToPilgrim", { distance: route.distanceKm.toFixed(1) })}</Text>
                 </View>
                 <TouchableOpacity style={styles.resolveButton} onPress={onResolve} disabled={resolving}>
                   {resolving ? (
                     <ActivityIndicator color={colors.surface} size="small" />
                   ) : (
-                    <Text style={styles.resolveButtonText}>Mark resolved</Text>
+                    <Text style={styles.resolveButtonText}>{t("sosDirectionsModal.markResolved")}</Text>
                   )}
                 </TouchableOpacity>
               </View>
@@ -139,7 +141,7 @@ export function SOSDirectionsModal({ visible, destination, onClose, onResolve, r
 
             {!loading && !route && (
               <View style={styles.bottomCard}>
-                <Text style={styles.routeDistance}>Couldn't load directions. Please try again.</Text>
+                <Text style={styles.routeDistance}>{t("taskDirectionsModal.loadFailed")}</Text>
               </View>
             )}
           </>

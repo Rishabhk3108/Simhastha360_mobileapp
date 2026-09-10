@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { WarningCircle } from "./icons";
 import { SOSDirectionsModal } from "./SOSDirectionsModal";
 import { getAssignedSOS, acknowledgeSOS, resolveSOS, type SOSAlertOut } from "../api/sos";
@@ -13,6 +14,7 @@ const POLL_INTERVAL_MS = 8000;
 // way to decline; only acknowledge (or silently time out and get
 // reassigned by the backend).
 export function SOSResponderOverlay() {
+  const { t } = useTranslation();
   const [assigned, setAssigned] = useState<SOSAlertOut | null>(null);
   const [minimized, setMinimized] = useState(false);
   const [acknowledging, setAcknowledging] = useState(false);
@@ -45,7 +47,7 @@ export function SOSResponderOverlay() {
       const updated = await acknowledgeSOS(assigned.id);
       setAssigned(updated);
     } catch {
-      Alert.alert("Could not acknowledge", "Please try again.");
+      Alert.alert(t("sosResponderOverlay.acknowledgeFailedTitle"), t("common.tryAgain"));
     } finally {
       setAcknowledging(false);
     }
@@ -59,7 +61,7 @@ export function SOSResponderOverlay() {
       setAssigned(null);
       setMinimized(false);
     } catch {
-      Alert.alert("Could not mark resolved", "Please try again.");
+      Alert.alert(t("sosResponderOverlay.resolveFailedTitle"), t("common.tryAgain"));
     } finally {
       setResolving(false);
     }
@@ -72,15 +74,13 @@ export function SOSResponderOverlay() {
       <Modal visible animationType="fade" onRequestClose={() => {}}>
         <View style={styles.urgentRoot}>
           <Text style={styles.urgentEmoji}>🚨</Text>
-          <Text style={styles.urgentTitle}>Emergency Nearby</Text>
-          <Text style={styles.urgentBody}>
-            A pilgrim needs help and you're the nearest available responder. Please acknowledge to get directions.
-          </Text>
+          <Text style={styles.urgentTitle}>{t("sosResponderOverlay.emergencyNearby")}</Text>
+          <Text style={styles.urgentBody}>{t("sosResponderOverlay.emergencyBody")}</Text>
           <TouchableOpacity style={styles.urgentButton} onPress={handleAcknowledge} disabled={acknowledging}>
             {acknowledging ? (
               <ActivityIndicator color={colors.surface} />
             ) : (
-              <Text style={styles.urgentButtonText}>I'm Responding</Text>
+              <Text style={styles.urgentButtonText}>{t("sosResponderOverlay.imResponding")}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -100,7 +100,7 @@ export function SOSResponderOverlay() {
       {minimized && (
         <TouchableOpacity style={styles.reopenBanner} onPress={() => setMinimized(false)}>
           <WarningCircle size={16} color={colors.surface} weight="fill" />
-          <Text style={styles.reopenBannerText}>Active emergency response — tap to reopen</Text>
+          <Text style={styles.reopenBannerText}>{t("sosResponderOverlay.reopenBanner")}</Text>
         </TouchableOpacity>
       )}
     </>

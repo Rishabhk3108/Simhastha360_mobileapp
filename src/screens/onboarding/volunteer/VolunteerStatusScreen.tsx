@@ -1,6 +1,7 @@
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
 import { colors, fonts } from "../../../theme";
 import { useAuth } from "../../../auth/AuthContext";
 import type { OnboardingStackParamList } from "../../../navigation/AppStack";
@@ -8,6 +9,7 @@ import type { OnboardingStackParamList } from "../../../navigation/AppStack";
 type Props = NativeStackScreenProps<OnboardingStackParamList, "VolunteerStatus">;
 
 export function VolunteerStatusScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
   const { status, reviewNote, justSubmitted } = route.params;
   const { logout } = useAuth();
 
@@ -26,17 +28,15 @@ export function VolunteerStatusScreen({ navigation, route }: Props) {
         </View>
 
         <Text style={styles.title}>
-          {isRejected ? "Application not approved" : justSubmitted ? "Application submitted" : "Application pending"}
+          {isRejected ? t("volunteerStatus.rejectedTitle") : justSubmitted ? t("volunteerStatus.submittedTitle") : t("volunteerStatus.pendingTitle")}
         </Text>
 
         <Text style={styles.body}>
-          {isRejected
-            ? reviewNote || "Your volunteer application was not approved this time."
-            : "Your volunteer application is under review. An admin will approve you before you can access volunteer tasks - check back and log in again later."}
+          {isRejected ? reviewNote || t("volunteerStatus.rejectedBody") : t("volunteerStatus.pendingBody")}
         </Text>
 
         <TouchableOpacity style={styles.primaryButton} onPress={backToStart}>
-          <Text style={styles.primaryButtonText}>Back to start</Text>
+          <Text style={styles.primaryButtonText}>{t("volunteerStatus.backToStart")}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

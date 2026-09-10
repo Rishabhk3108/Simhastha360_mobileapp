@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { QrCode, UsersThree } from "../components/icons";
 import { Screen } from "../components/Screen";
 import { Card } from "../components/Card";
@@ -10,6 +11,7 @@ import { getDeviceId } from "../device/deviceId";
 import { colors, fonts } from "../theme";
 
 function HealthCardSection() {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
@@ -21,7 +23,7 @@ function HealthCardSection() {
       const { data } = await api.post("/health-card", { device_id: deviceId, name, emergency_contact: contact, blood_group: bloodGroup || undefined });
       setQrToken(data.qr_token);
     } catch {
-      Alert.alert("Could not save", "Please try again.");
+      Alert.alert(t("account.saveFailedTitle"), t("common.tryAgain"));
     }
   }
 
@@ -29,20 +31,21 @@ function HealthCardSection() {
     <Card>
       <View style={styles.titleRow}>
         <QrCode size={16} color={colors.saffronDeep} weight="fill" />
-        <Text style={styles.cardTitle}>Digital Health Card · opt-in</Text>
+        <Text style={styles.cardTitle}>{t("account.healthCardTitle")}</Text>
       </View>
-      <TextInput style={styles.input} placeholder="Name" value={name} onChangeText={setName} />
-      <TextInput style={styles.input} placeholder="Emergency contact" value={contact} onChangeText={setContact} keyboardType="phone-pad" />
-      <TextInput style={styles.input} placeholder="Blood group" value={bloodGroup} onChangeText={setBloodGroup} />
+      <TextInput style={styles.input} placeholder={t("account.namePlaceholder")} value={name} onChangeText={setName} />
+      <TextInput style={styles.input} placeholder={t("account.emergencyContactPlaceholder")} value={contact} onChangeText={setContact} keyboardType="phone-pad" />
+      <TextInput style={styles.input} placeholder={t("account.bloodGroupPlaceholder")} value={bloodGroup} onChangeText={setBloodGroup} />
       <TouchableOpacity style={styles.primaryButton} onPress={save}>
-        <Text style={styles.primaryButtonText}>Save health card</Text>
+        <Text style={styles.primaryButtonText}>{t("account.saveHealthCard")}</Text>
       </TouchableOpacity>
-      {qrToken && <Text style={styles.muted}>Saved. A medical responder can scan your code (token: {qrToken.slice(0, 10)}...) to see this summary.</Text>}
+      {qrToken && <Text style={styles.muted}>{t("account.healthCardSaved", { token: qrToken.slice(0, 10) })}</Text>}
     </Card>
   );
 }
 
 function FamilyGroupSection() {
+  const { t } = useTranslation();
   const [memberName, setMemberName] = useState("");
   const [groupId, setGroupId] = useState<number | null>(null);
   const [shareToken, setShareToken] = useState<string | null>(null);
@@ -53,7 +56,7 @@ function FamilyGroupSection() {
       const { data } = await api.post("/family/groups", { created_by_device_id: deviceId, member_name: memberName });
       setGroupId(data.group_id);
     } catch {
-      Alert.alert("Could not create group", "Please try again.");
+      Alert.alert(t("account.createGroupFailedTitle"), t("common.tryAgain"));
     }
   }
 
@@ -63,7 +66,7 @@ function FamilyGroupSection() {
       const { data } = await api.post("/family/share-link", { device_id: deviceId });
       setShareToken(data.token);
     } catch {
-      Alert.alert("Could not create link", "Please try again.");
+      Alert.alert(t("account.createLinkFailedTitle"), t("common.tryAgain"));
     }
   }
 
@@ -71,22 +74,22 @@ function FamilyGroupSection() {
     <Card>
       <View style={styles.titleRow}>
         <UsersThree size={16} color={colors.teal} weight="fill" />
-        <Text style={styles.cardTitle}>Temporary Family Group</Text>
+        <Text style={styles.cardTitle}>{t("account.familyGroupTitle")}</Text>
       </View>
       {!groupId ? (
         <>
-          <TextInput style={styles.input} placeholder="Your name" value={memberName} onChangeText={setMemberName} />
+          <TextInput style={styles.input} placeholder={t("account.yourNamePlaceholder")} value={memberName} onChangeText={setMemberName} />
           <TouchableOpacity style={styles.primaryButton} onPress={createGroup}>
-            <Text style={styles.primaryButtonText}>Create group</Text>
+            <Text style={styles.primaryButtonText}>{t("account.createGroup")}</Text>
           </TouchableOpacity>
         </>
       ) : (
         <>
-          <Text style={styles.muted}>Group #{groupId} created. Share this ID with family members to join.</Text>
+          <Text style={styles.muted}>{t("account.groupCreated", { groupId })}</Text>
           <TouchableOpacity style={styles.primaryButton} onPress={createShareLink}>
-            <Text style={styles.primaryButtonText}>Generate "Peace of Mind" link</Text>
+            <Text style={styles.primaryButtonText}>{t("account.generateShareLink")}</Text>
           </TouchableOpacity>
-          {shareToken && <Text style={styles.muted}>Share link token: {shareToken}</Text>}
+          {shareToken && <Text style={styles.muted}>{t("account.shareLinkToken", { token: shareToken })}</Text>}
         </>
       )}
     </Card>
@@ -94,8 +97,9 @@ function FamilyGroupSection() {
 }
 
 export function AccountScreen() {
+  const { t } = useTranslation();
   return (
-    <Screen title="Account">
+    <Screen title={t("account.title")}>
       <PilgrimProfileCard />
       <HealthCardSection />
       <FamilyGroupSection />
