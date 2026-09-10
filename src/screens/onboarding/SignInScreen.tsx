@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Alert, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity } from "react-native";
+import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { loginPilgrim } from "../../api/pilgrims";
 import { usePilgrim } from "../../pilgrim/PilgrimContext";
 import { colors, fonts } from "../../theme";
+import { TextInput } from "../../components/AppTextInput";
 import type { OnboardingStackParamList } from "../../navigation/AppStack";
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, "SignIn">;

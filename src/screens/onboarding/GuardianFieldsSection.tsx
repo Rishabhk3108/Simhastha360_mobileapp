@@ -1,5 +1,6 @@
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { colors, fonts } from "../../theme";
+import { TextInput } from "../../components/AppTextInput";
 import type { GuardianFields } from "./types";
 
 interface Props {

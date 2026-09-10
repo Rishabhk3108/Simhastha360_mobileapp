@@ -1,95 +1,13 @@
 import { useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { QrCode, UsersThree } from "../components/icons";
 import { Screen } from "../components/Screen";
 import { Card } from "../components/Card";
 import { PilgrimProfileCard } from "../components/PilgrimProfileCard";
-import { useAuth } from "../auth/AuthContext";
+import { TextInput } from "../components/AppTextInput";
 import { api } from "../api/client";
 import { getDeviceId } from "../device/deviceId";
 import { colors, fonts } from "../theme";
-
-const SKILLS = ["first aid", "crowd management", "translation", "sanitation", "general support"];
-
-function VolunteerRegisterForm() {
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [skills, setSkills] = useState<string[]>([]);
-  const [submitted, setSubmitted] = useState(false);
-
-  function toggleSkill(skill: string) {
-    setSkills((prev) => (prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]));
-  }
-
-  async function submit() {
-    try {
-      await api.post("/volunteers/apply", { name, phone, password, skills });
-      setSubmitted(true);
-    } catch (err: any) {
-      Alert.alert("Could not submit", err.response?.data?.detail ?? "Please try again.");
-    }
-  }
-
-  if (submitted) {
-    return <Text style={styles.muted}>Application received. Status: Pending Review. An admin will approve you before tasks are assigned.</Text>;
-  }
-
-  return (
-    <>
-      <TextInput style={styles.input} placeholder="Name" value={name} onChangeText={setName} />
-      <TextInput style={styles.input} placeholder="Phone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
-      <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
-      <View style={styles.skillRow}>
-        {SKILLS.map((skill) => (
-          <TouchableOpacity key={skill} style={[styles.chip, skills.includes(skill) && styles.chipActive]} onPress={() => toggleSkill(skill)}>
-            <Text style={[styles.chipText, skills.includes(skill) && styles.chipTextActive]}>{skill}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      <TouchableOpacity style={styles.primaryButton} onPress={submit}>
-        <Text style={styles.primaryButtonText}>Submit application</Text>
-      </TouchableOpacity>
-    </>
-  );
-}
-
-function VolunteerAccessSection() {
-  const { token, role, name, logout } = useAuth();
-  const [expanded, setExpanded] = useState(false);
-
-  if (token) {
-    return (
-      <Card>
-        <View style={styles.titleRow}>
-          <Ionicons name="shield-checkmark-outline" size={18} color={colors.teal} />
-          <Text style={styles.cardTitle}>{name}</Text>
-        </View>
-        <Text style={styles.muted}>Signed in as {role?.replace("_", " ")}</Text>
-        <TouchableOpacity style={styles.secondaryButton} onPress={logout}>
-          <Text style={styles.secondaryButtonText}>Log out</Text>
-        </TouchableOpacity>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <TouchableOpacity style={styles.header} onPress={() => setExpanded((e) => !e)} activeOpacity={0.8}>
-        <Ionicons name="hand-left-outline" size={18} color={colors.muted} />
-        <Text style={[styles.cardTitle, styles.headerTitle]}>Register as Volunteer</Text>
-        <Ionicons name={expanded ? "chevron-up" : "chevron-down"} size={18} color={colors.muted} />
-      </TouchableOpacity>
-
-      {expanded && (
-        <View style={{ marginTop: 14 }}>
-          <VolunteerRegisterForm />
-        </View>
-      )}
-    </Card>
-  );
-}
 
 function HealthCardSection() {
   const [name, setName] = useState("");
@@ -181,7 +99,6 @@ export function AccountScreen() {
       <PilgrimProfileCard />
       <HealthCardSection />
       <FamilyGroupSection />
-      <VolunteerAccessSection />
     </Screen>
   );
 }
@@ -189,17 +106,8 @@ export function AccountScreen() {
 const styles = StyleSheet.create({
   cardTitle: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.ink },
   titleRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
-  header: { flexDirection: "row", alignItems: "center", gap: 10 },
-  headerTitle: { flex: 1 },
   muted: { fontFamily: fonts.body, color: colors.muted, marginTop: 6 },
   input: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 11, marginTop: 10, backgroundColor: colors.surface, fontFamily: fonts.body },
   primaryButton: { backgroundColor: colors.ink, borderRadius: 10, paddingVertical: 13, alignItems: "center", marginTop: 12 },
   primaryButtonText: { fontFamily: fonts.bodyBold, color: colors.surface },
-  secondaryButton: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, paddingVertical: 13, alignItems: "center", marginTop: 12 },
-  secondaryButtonText: { fontFamily: fonts.bodyMedium, color: colors.ink },
-  skillRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 12 },
-  chip: { paddingHorizontal: 11, paddingVertical: 7, borderRadius: 999, borderWidth: 1, borderColor: colors.border },
-  chipActive: { backgroundColor: colors.ink, borderColor: colors.ink },
-  chipText: { fontFamily: fonts.body, fontSize: 12, color: colors.ink },
-  chipTextActive: { color: colors.surface },
 });

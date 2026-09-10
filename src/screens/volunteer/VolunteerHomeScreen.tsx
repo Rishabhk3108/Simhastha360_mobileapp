@@ -1,23 +1,28 @@
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { WarningCircle, MapPin, Coins, NavigationArrow, Camera } from "../components/icons";
-import { Screen } from "../components/Screen";
-import { Card } from "../components/Card";
-import { TaskDirectionsModal } from "../components/TaskDirectionsModal";
-import { TaskCompletionModal } from "../components/TaskCompletionModal";
-import { getMyTasks, acknowledgeTask } from "../api/tasks";
-import { api } from "../api/client";
-import { useLocation } from "../location/useLocation";
-import { colors, fonts } from "../theme";
-import type { Task } from "../api/types";
+import { ActivityIndicator, Alert, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
+import { WarningCircle, MapPin, Coins, NavigationArrow, Camera } from "../../components/icons";
+import { Screen } from "../../components/Screen";
+import { Card } from "../../components/Card";
+import { PointsPill } from "../../components/PointsPill";
+import { TaskDirectionsModal } from "../../components/TaskDirectionsModal";
+import { TaskCompletionModal } from "../../components/TaskCompletionModal";
+import { getMyTasks, acknowledgeTask } from "../../api/tasks";
+import { getMyVolunteerStatus, updateMyAvailability } from "../../api/volunteers";
+import { api } from "../../api/client";
+import { useLocation } from "../../location/useLocation";
+import { colors, fonts } from "../../theme";
+import type { Task } from "../../api/types";
+import type { VolunteerProfile } from "../../api/volunteers";
 
 const PRIORITY_COLOR: Record<Task["priority"], string> = { low: colors.green, medium: colors.yellow, high: colors.red };
+const LOCATION_PUSH_INTERVAL_MS = 20000;
 const TASK_POLL_INTERVAL_MS = 15000;
 
-export function TasksScreen() {
-  const { coords } = useLocation();
+export function VolunteerHomeScreen() {
+  const { refresh } = useLocation();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [me, setMe] = useState<VolunteerProfile | null>(null);
   const [initialLoading, setInitialLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [directionsTask, setDirectionsTask] = useState<Task | null>(null);
@@ -25,25 +30,45 @@ export function TasksScreen() {
   const [acceptingId, setAcceptingId] = useState<number | null>(null);
 
   const load = useCallback(async () => {
-    setTasks(await getMyTasks());
+    const [taskList, profile] = await Promise.all([getMyTasks(), getMyVolunteerStatus()]);
+    setTasks(taskList.filter((t) => t.status !== "complete"));
+    setMe(profile);
     setInitialLoading(false);
   }, []);
 
   useFocusEffect(
     useCallback(() => {
       load();
-      if (coords) {
-        api.patch("/field-team/me/location", { lat: coords.lat, lng: coords.lng }).catch(() => {});
-      }
-      const interval = setInterval(load, TASK_POLL_INTERVAL_MS);
-      return () => clearInterval(interval);
-    }, [load, coords]),
+      const pollInterval = setInterval(load, TASK_POLL_INTERVAL_MS);
+      const pushLocation = async () => {
+        const fresh = await refresh();
+        if (fresh) {
+          api.patch("/field-team/me/location", { lat: fresh.lat, lng: fresh.lng }).catch(() => {});
+        }
+      };
+      pushLocation();
+      const locationInterval = setInterval(pushLocation, LOCATION_PUSH_INTERVAL_MS);
+      return () => {
+        clearInterval(pollInterval);
+        clearInterval(locationInterval);
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [load]),
   );
 
   async function onRefresh() {
     setRefreshing(true);
     await load();
     setRefreshing(false);
+  }
+
+  async function toggleOnDuty(value: boolean) {
+    try {
+      const profile = await updateMyAvailability(value);
+      setMe(profile);
+    } catch {
+      Alert.alert("Could not update availability", "Please try again.");
+    }
   }
 
   async function accept(task: Task) {
@@ -60,7 +85,19 @@ export function TasksScreen() {
   }
 
   return (
-    <Screen title="My tasks" subtitle="Field team" refreshing={refreshing} onRefresh={onRefresh}>
+    <Screen title="My tasks" subtitle="Volunteer" refreshing={refreshing} onRefresh={onRefresh}>
+      <PointsPill />
+
+      {me && (
+        <Card>
+          <View style={styles.dutyRow}>
+            <Text style={styles.dutyLabel}>{me.on_duty ? "Available" : "Off duty"}</Text>
+            <Switch value={me.on_duty} onValueChange={toggleOnDuty} trackColor={{ true: colors.teal, false: colors.border }} />
+          </View>
+          <Text style={styles.muted}>Your manager only assigns tasks to volunteers marked available.</Text>
+        </Card>
+      )}
+
       {initialLoading && (
         <View style={styles.loadingWrap}>
           <ActivityIndicator color={colors.ink} />
@@ -88,13 +125,14 @@ export function TasksScreen() {
             </View>
           </View>
           <Text style={styles.status}>{t.status.replace("_", " ")}</Text>
+          {t.review_note && t.status === "acknowledged" && <Text style={styles.reviewNote}>Manager's note: {t.review_note}</Text>}
 
           {t.status === "unassigned" && (
             <TouchableOpacity style={styles.primaryButton} onPress={() => accept(t)} disabled={acceptingId === t.id}>
               {acceptingId === t.id ? (
                 <ActivityIndicator color={colors.surface} size="small" />
               ) : (
-                <Text style={styles.primaryButtonText}>Acknowledge</Text>
+                <Text style={styles.primaryButtonText}>Accept task</Text>
               )}
             </TouchableOpacity>
           )}
@@ -110,7 +148,7 @@ export function TasksScreen() {
               </TouchableOpacity>
             </View>
           )}
-          {t.status === "review" && <Text style={styles.muted}>Submitted — awaiting review.</Text>}
+          {t.status === "review" && <Text style={styles.muted}>Submitted — awaiting your manager's review.</Text>}
         </Card>
       ))}
       {!initialLoading && tasks.length === 0 && <Text style={styles.muted}>No tasks assigned right now.</Text>}
@@ -140,6 +178,8 @@ export function TasksScreen() {
 
 const styles = StyleSheet.create({
   loadingWrap: { alignItems: "center", gap: 8, paddingVertical: 24 },
+  dutyRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  dutyLabel: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.ink },
   priorityRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 },
   priorityText: { fontFamily: fonts.bodyBold, fontSize: 11, letterSpacing: 0.6, textTransform: "uppercase", color: colors.redDeep },
   description: { fontFamily: fonts.bodyMedium, fontSize: 15.5, color: colors.ink, marginBottom: 8, lineHeight: 22 },
@@ -147,6 +187,7 @@ const styles = StyleSheet.create({
   metaChip: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: colors.surfaceTint, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 },
   metaText: { fontFamily: fonts.body, fontSize: 11.5, color: colors.muted },
   status: { fontFamily: fonts.bodyBold, color: colors.saffronDeep, marginBottom: 4, textTransform: "capitalize" },
+  reviewNote: { fontFamily: fonts.body, fontSize: 12.5, color: colors.redDeep, marginBottom: 6 },
   muted: { fontFamily: fonts.body, color: colors.muted },
   primaryButton: { backgroundColor: colors.ink, borderRadius: 10, paddingVertical: 11, alignItems: "center", marginTop: 4 },
   primaryButtonText: { fontFamily: fonts.bodyBold, color: colors.surface },

@@ -33,3 +33,12 @@ export const QrCode = ({ size, color }: IconProps) => <Ionicons name="qr-code" s
 export const WarningCircle = ({ size, color }: IconProps) => <Ionicons name="alert-circle" size={size} color={color} />;
 export const MapPin = ({ size, color }: IconProps) => <Ionicons name="location-outline" size={size} color={color} />;
 export const Clock = ({ size, color }: IconProps) => <Ionicons name="time-outline" size={size} color={color} />;
+export const X = ({ size, color }: IconProps) => <Ionicons name="close" size={size} color={color} />;
+export const Car = ({ size, color }: IconProps) => <Ionicons name="car-sport" size={size} color={color} />;
+export const Bell = ({ size, color }: IconProps) => <Ionicons name="notifications" size={size} color={color} />;
+export const Star = ({ size, color }: IconProps) => <Ionicons name="star" size={size} color={color} />;
+export const Camera = ({ size, color }: IconProps) => <Ionicons name="camera" size={size} color={color} />;
+export const CheckCircle = ({ size, color }: IconProps) => <Ionicons name="checkmark-circle" size={size} color={color} />;
+export const Coins = ({ size, color }: IconProps) => <MaterialCommunityIcons name="hand-coin" size={size} color={color} />;
+export const LogOut = ({ size, color }: IconProps) => <Ionicons name="log-out-outline" size={size} color={color} />;
+export const ChartBar = ({ size, color }: IconProps) => <Ionicons name="stats-chart" size={size} color={color} />;

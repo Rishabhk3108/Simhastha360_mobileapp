@@ -17,6 +17,8 @@ export const colors = {
   teal: "#2E7A73",
   tealDeep: "#1B4B47",
   tealTint: "rgba(46,122,115,0.12)",
+  pink: "#C76B8D",
+  pinkDeep: "#8A4361",
   green: "#4C8B5B",
   yellow: "#D9A339",
   yellowDeep: "#8A6414",

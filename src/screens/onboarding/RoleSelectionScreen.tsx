@@ -33,11 +33,11 @@ export function RoleSelectionScreen({ navigation }: Props) {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.card, styles.cardDisabled]} onPress={() => comingSoon("Volunteer")}>
-          <Ionicons name="hand-left-outline" size={28} color={colors.faint} />
+        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("VolunteerEntry")}>
+          <Ionicons name="hand-left-outline" size={28} color={colors.teal} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.cardTitleDisabled}>Volunteer</Text>
-            <Text style={styles.cardSubtitle}>Coming soon from this screen — available in Account tab for now.</Text>
+            <Text style={styles.cardTitle}>Volunteer</Text>
+            <Text style={styles.cardSubtitle}>Already registered, or joining as a Simhastha volunteer for the first time.</Text>
           </View>
         </TouchableOpacity>
 

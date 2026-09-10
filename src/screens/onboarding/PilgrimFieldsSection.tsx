@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { colors, fonts } from "../../theme";
 import { PasswordStrengthMeter } from "../../components/PasswordStrengthMeter";
+import { TextInput } from "../../components/AppTextInput";
 import type { PilgrimFields } from "./types";
 
 interface Props {

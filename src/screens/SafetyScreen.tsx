@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Siren, UsersThree, Toilet, DropHalf, UserFocus } from "../components/icons";
 import { api } from "../api/client";
 import { Screen } from "../components/Screen";
 import { Card } from "../components/Card";
+import { TextInput } from "../components/AppTextInput";
 import { useLocation } from "../location/useLocation";
 import { getDeviceId } from "../device/deviceId";
 import { colors, fonts } from "../theme";
