@@ -42,3 +42,4 @@ export const CheckCircle = ({ size, color }: IconProps) => <Ionicons name="check
 export const Coins = ({ size, color }: IconProps) => <MaterialCommunityIcons name="hand-coin" size={size} color={color} />;
 export const LogOut = ({ size, color }: IconProps) => <Ionicons name="log-out-outline" size={size} color={color} />;
 export const ChartBar = ({ size, color }: IconProps) => <Ionicons name="stats-chart" size={size} color={color} />;
+export const Translate = ({ size, color }: IconProps) => <Ionicons name="language" size={size} color={color} />;

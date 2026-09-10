@@ -25,9 +25,7 @@
     "volunteerTitle": "Volunteer",
     "volunteerSubtitle": "Already registered, or joining as a Simhastha volunteer for the first time.",
     "foreignGuestTitle": "Are you a guest to India?",
-    "comingSoon": "Coming soon.",
-    "comingSoonTitle": "Coming soon",
-    "comingSoonBody": "This will be available in a later update."
+    "foreignGuestSubtitle": "Explore Sinhastha 2028 and discover India, with a few extras built just for you."
   },
   "accountCheck": {
     "title": "Do you already have an account?",
@@ -542,5 +540,89 @@
     "safety": "Safety",
     "tasks": "Tasks",
     "account": "Account"
+  },
+  "foreignerEntry": {
+    "title": "Foreign guest account",
+    "subtitle": "Already have an account, or setting one up for the first time to explore Simhastha 2028?",
+    "login": "Login",
+    "register": "Register"
+  },
+  "foreignerLogin": {
+    "title": "Sign in",
+    "subtitle": "Use the phone number and password from your registration.",
+    "failedTitle": "Could not sign in"
+  },
+  "foreignerRegister": {
+    "title": "Register",
+    "subtitle": "Just a few details to get you started - you can add more anytime from your profile.",
+    "countryPlaceholder": "Your country",
+    "missingTitle": "Missing details",
+    "missingBody": "Please enter your name, phone number, and country.",
+    "existsBody": "An account with this phone number already exists. Please sign in instead."
+  },
+  "foreignerWelcome": {
+    "welcomeIndia": "Welcome to India",
+    "subIndia": "Namaste",
+    "welcomeSimhastha": "Welcome to Simhastha 2028",
+    "subSimhastha": "Ujjain, India"
+  },
+  "foreignerHome": {
+    "knowMore": "Know more",
+    "recommendedLabel": "You can visit this place too",
+    "distanceAway": "{{distance}} km from you",
+    "getDirections": "Get Directions",
+    "category": {
+      "temple": "Temple",
+      "ghat": "Ghat",
+      "heritage": "Heritage Site",
+      "ashram": "Ashram"
+    }
+  },
+  "simhasthaInfo": {
+    "title": "Know more about Simhastha",
+    "what": {
+      "title": "What is Simhastha?",
+      "body": "Simhastha - often called the Kumbh Mela of Ujjain - is one of the largest religious gatherings in the world, held once every 12 years on the banks of the Kshipra River in Ujjain, Madhya Pradesh. It gets its name from the moment it marks: when the planet Jupiter (Guru) enters the zodiac sign Leo (Simha)."
+    },
+    "manthan": {
+      "title": "The legend of Samudra Manthan",
+      "body": "The story behind Kumbh goes back to the Samudra Manthan - the churning of the cosmic ocean by gods and demons in search of Amrita, the nectar of immortality. Mount Mandara served as the churning rod and the serpent king Vasuki as the rope. During the struggle that followed, a few drops of the nectar are said to have fallen at four places on earth - Ujjain, Prayagraj, Haridwar and Nashik. Kumbh Mela is celebrated at each of these four sites in rotation."
+    },
+    "whyUjjain": {
+      "title": "Why it's called Simhastha",
+      "body": "Unlike the Kumbh gatherings at the other three sites, Ujjain's festival takes its name Simhastha from the astrological event that triggers it - Jupiter's entry into Leo. In its present form, the Ujjain gathering dates back to the 18th century, when the Maratha ruler Ranoji Shinde invited ascetics from Nashik to the city's local festival, growing it into the Simhastha known today."
+    },
+    "whyDevoteesCome": {
+      "title": "Why millions come to bathe here",
+      "body": "Devotees believe that bathing in the Kshipra River during Simhastha washes away sins and brings them closer to Moksha - liberation from the cycle of birth and death. Alongside the ritual bath, the weeks of Simhastha bring prayer, charitable giving, spiritual discourses, and the company of saints and ascetics from across India."
+    },
+    "shahiSnan": {
+      "title": "Shahi Snan and the Akharas",
+      "body": "The most striking moments of Simhastha are the Shahi Snan - the \"royal baths\". These are ceremonial processions in which the Akharas, ancient monastic orders of Hindu ascetics led by Mahamandaleshwars, enter the Kshipra in a strict order of precedence before the general public bathes. \"Shahi\" - royal - refers to the spiritual status of these orders, not to earthly kings."
+    },
+    "dates2028": {
+      "title": "Simhastha 2028",
+      "body": "The 2028 Ujjain Simhastha is currently planned to run from 27 March to 27 May 2028, with three major Shahi Snan dates: Chaitra Purnima (9 April), Vaishakh Amavasya (24 April), and Vaishakh Purnima (8 May). Millions of pilgrims, and now visitors from across the world, are expected across the roughly two-month window."
+    },
+    "footnote": "Dates and details are announced and revised by the Madhya Pradesh government and Ujjain administration as 2028 approaches - always confirm the latest schedule with your host or the nearest help desk."
+  },
+  "culturalFacts": {
+    "teaser": "Do you know this fact?",
+    "label": "Did you know?",
+    "fact1": "Ujjain is one of India's Sapta Puri - the seven holiest pilgrimage cities in Hinduism.",
+    "fact2": "Mahakaleshwar Temple is home to one of only twelve Jyotirlingas in India, and the only one facing south.",
+    "fact3": "Ujjain was known in ancient times as Avantika, one of the great centers of learning in India.",
+    "fact4": "The Vikram Samvat calendar, still used across India today, is traditionally linked to King Vikramaditya of Ujjain.",
+    "fact5": "The classical Sanskrit poet Kalidasa is believed to have lived and written in Ujjain.",
+    "fact6": "Ujjain sits almost exactly on the Tropic of Cancer, which is why ancient astronomers built an observatory here.",
+    "fact7": "\"Simhastha\" takes its name from Simha (Leo) - it happens when Jupiter enters that zodiac sign, roughly once every 12 years.",
+    "fact8": "\"Kumbh\" means pitcher, referring to the pot of Amrita - the nectar of immortality - from the legend of Samudra Manthan.",
+    "fact9": "Drops of Amrita are believed to have fallen at four places on Earth: Ujjain, Prayagraj, Haridwar and Nashik.",
+    "fact10": "The Shahi Snan follows a centuries-old order of precedence among the Akharas, the ancient monastic orders of ascetics.",
+    "fact11": "At Kal Bhairav Temple in Ujjain, devotees offer liquor to the deity - an unusual tradition found almost nowhere else.",
+    "fact12": "Chintaman Ganesh Temple houses one of the rare \"self-manifested\" Ganesh idols, believed to have appeared on its own.",
+    "fact13": "Tradition holds that Lord Krishna and Balarama studied under sage Sandipani at his ashram in Ujjain.",
+    "fact14": "Mangalnath Temple in Ujjain is traditionally regarded as the birthplace of Mangal, the planet Mars, in Hindu astrology.",
+    "fact15": "Harsiddhi Temple is one of the 51 Shakti Peethas - sacred sites linked to the goddess Sati across the Indian subcontinent."
   }
 }

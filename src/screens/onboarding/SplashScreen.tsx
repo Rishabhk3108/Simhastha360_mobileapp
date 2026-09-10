@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Animated, StyleSheet, Text, View } from "react-native";
+import { Animated, Image, StyleSheet, Text, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { colors, fonts } from "../../theme";
 import { usePilgrim } from "../../pilgrim/PilgrimContext";
@@ -31,6 +31,9 @@ export function SplashScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
+      <Image source={require("../../../assets/splash-bg-ghat.jpg")} style={styles.bgImage} resizeMode="cover" />
+      <View style={styles.scrim} />
+
       <Animated.View style={[styles.seal, { opacity: sealOpacity, transform: [{ scale: sealScale }] }]}>
         <View style={styles.sun} />
         <View style={[styles.wave, { width: 62, left: 34, top: 78, backgroundColor: colors.surface }]} />
@@ -49,6 +52,8 @@ export function SplashScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.ink, alignItems: "center", justifyContent: "center", gap: 28, padding: 24 },
+  bgImage: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, opacity: 0.3 },
+  scrim: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(27,33,64,0.6)" },
   seal: {
     width: 130,
     height: 130,

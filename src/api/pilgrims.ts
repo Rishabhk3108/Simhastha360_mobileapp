@@ -1,6 +1,6 @@
 import { api } from "./client";
 import { getDeviceId } from "../device/deviceId";
-import type { PilgrimFields } from "../screens/onboarding/types";
+import type { ForeignerFields, PilgrimFields } from "../screens/onboarding/types";
 import type { PilgrimProfile } from "../pilgrim/PilgrimContext";
 
 export async function registerPilgrim(pilgrim: PilgrimFields): Promise<{ pilgrim_id: number; name: string; created_at: string }> {
@@ -27,28 +27,49 @@ export async function registerPilgrim(pilgrim: PilgrimFields): Promise<{ pilgrim
   return data;
 }
 
+function toPilgrimFields(detail: any): PilgrimFields {
+  return {
+    name: detail.name,
+    phone: detail.phone,
+    aadharNumber: detail.aadhar_number ?? "",
+    password: "",
+    age: detail.age != null ? String(detail.age) : "",
+    photoBase64: detail.photo_base64,
+    samagraId: detail.samagra_id ?? "",
+    addressLine1: detail.address_line1 ?? "",
+    addressLine2: detail.address_line2 ?? "",
+    city: detail.city ?? "",
+    state: detail.state ?? "",
+    pincode: detail.pincode ?? "",
+    country: detail.country,
+    medicalHistory: detail.medical_history ?? "",
+    isForeigner: detail.is_foreigner,
+  };
+}
+
 export async function loginPilgrim(aadharNumber: string, password: string): Promise<PilgrimProfile> {
   const { data } = await api.post("/pilgrims/login", { aadhar_number: aadharNumber, password });
+  return { pilgrimId: data.pilgrim_id, pilgrim: toPilgrimFields(data.pilgrim) };
+}
 
-  return {
-    pilgrimId: data.pilgrim_id,
-    pilgrim: {
-      name: data.pilgrim.name,
-      phone: data.pilgrim.phone,
-      aadharNumber: data.pilgrim.aadhar_number,
-      password: "",
-      age: String(data.pilgrim.age),
-      photoBase64: data.pilgrim.photo_base64,
-      samagraId: data.pilgrim.samagra_id ?? "",
-      addressLine1: data.pilgrim.address_line1,
-      addressLine2: data.pilgrim.address_line2 ?? "",
-      city: data.pilgrim.city,
-      state: data.pilgrim.state,
-      pincode: data.pilgrim.pincode,
-      country: data.pilgrim.country,
-      medicalHistory: data.pilgrim.medical_history ?? "",
+export async function registerForeigner(foreigner: ForeignerFields): Promise<{ pilgrim_id: number; name: string; created_at: string }> {
+  const deviceId = await getDeviceId();
+  const { data } = await api.post("/pilgrims/register-foreign", {
+    device_id: deviceId,
+    foreigner: {
+      name: foreigner.name,
+      phone: foreigner.phone,
+      country: foreigner.country,
+      password: foreigner.password,
+      photo_base64: foreigner.photoBase64 || undefined,
     },
-  };
+  });
+  return data;
+}
+
+export async function loginForeigner(phone: string, password: string): Promise<PilgrimProfile> {
+  const { data } = await api.post("/pilgrims/login-foreign", { phone, password });
+  return { pilgrimId: data.pilgrim_id, pilgrim: toPilgrimFields(data.pilgrim) };
 }
 
 export async function createGuardianLinkToken(pilgrimId: number): Promise<{ token: string; expires_at: string }> {

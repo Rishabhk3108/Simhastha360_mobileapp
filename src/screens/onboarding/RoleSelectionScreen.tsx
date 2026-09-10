@@ -1,4 +1,4 @@
-import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
@@ -9,10 +9,6 @@ type Props = NativeStackScreenProps<OnboardingStackParamList, "RoleSelection">;
 
 export function RoleSelectionScreen({ navigation }: Props) {
   const { t } = useTranslation();
-
-  function comingSoon() {
-    Alert.alert(t("roleSelection.comingSoonTitle"), t("roleSelection.comingSoonBody"));
-  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -44,11 +40,11 @@ export function RoleSelectionScreen({ navigation }: Props) {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.card, styles.cardDisabled]} onPress={comingSoon}>
-          <Ionicons name="airplane-outline" size={28} color={colors.faint} />
+        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("ForeignerEntry")}>
+          <Ionicons name="airplane-outline" size={28} color={colors.brass} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.cardTitleDisabled}>{t("roleSelection.foreignGuestTitle")}</Text>
-            <Text style={styles.cardSubtitle}>{t("roleSelection.comingSoon")}</Text>
+            <Text style={styles.cardTitle}>{t("roleSelection.foreignGuestTitle")}</Text>
+            <Text style={styles.cardSubtitle}>{t("roleSelection.foreignGuestSubtitle")}</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -71,8 +67,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  cardDisabled: { opacity: 0.6 },
   cardTitle: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.ink },
-  cardTitleDisabled: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.muted },
   cardSubtitle: { fontFamily: fonts.body, fontSize: 12, color: colors.muted, marginTop: 2 },
 });

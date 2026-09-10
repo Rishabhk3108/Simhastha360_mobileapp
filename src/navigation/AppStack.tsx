@@ -12,6 +12,10 @@ import { VolunteerEntryScreen } from "../screens/onboarding/volunteer/VolunteerE
 import { VolunteerLoginScreen } from "../screens/onboarding/volunteer/VolunteerLoginScreen";
 import { VolunteerRegisterScreen } from "../screens/onboarding/volunteer/VolunteerRegisterScreen";
 import { VolunteerStatusScreen } from "../screens/onboarding/volunteer/VolunteerStatusScreen";
+import { ForeignerEntryScreen } from "../screens/onboarding/foreigner/ForeignerEntryScreen";
+import { ForeignerLoginScreen } from "../screens/onboarding/foreigner/ForeignerLoginScreen";
+import { ForeignerRegisterScreen } from "../screens/onboarding/foreigner/ForeignerRegisterScreen";
+import { ForeignerWelcomeScreen } from "../screens/onboarding/ForeignerWelcomeScreen";
 import { RootNavigator } from "./RootNavigator";
 
 export type OnboardingStackParamList = {
@@ -28,6 +32,10 @@ export type OnboardingStackParamList = {
   VolunteerLogin: undefined;
   VolunteerRegister: undefined;
   VolunteerStatus: { status: "pending" | "rejected"; reviewNote?: string | null; justSubmitted?: boolean };
+  ForeignerEntry: undefined;
+  ForeignerLogin: undefined;
+  ForeignerRegister: undefined;
+  ForeignerWelcome: undefined;
   Main: undefined;
 };
 
@@ -49,6 +57,10 @@ export function AppStack({ initialRouteName }: { initialRouteName: "LanguageSele
       <Stack.Screen name="VolunteerLogin" component={VolunteerLoginScreen} />
       <Stack.Screen name="VolunteerRegister" component={VolunteerRegisterScreen} />
       <Stack.Screen name="VolunteerStatus" component={VolunteerStatusScreen} />
+      <Stack.Screen name="ForeignerEntry" component={ForeignerEntryScreen} />
+      <Stack.Screen name="ForeignerLogin" component={ForeignerLoginScreen} />
+      <Stack.Screen name="ForeignerRegister" component={ForeignerRegisterScreen} />
+      <Stack.Screen name="ForeignerWelcome" component={ForeignerWelcomeScreen} />
       <Stack.Screen name="Main" component={RootNavigator} />
     </Stack.Navigator>
   );

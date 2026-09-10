@@ -3,6 +3,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { Screen } from "../../components/Screen";
 import { Card } from "../../components/Card";
+import { LanguageToggleButton } from "../../components/LanguageToggleButton";
 import { LogOut } from "../../components/icons";
 import { useAuth } from "../../auth/AuthContext";
 import { colors, fonts } from "../../theme";
@@ -30,6 +31,8 @@ export function GuardianProfileScreen() {
           </View>
         </View>
       </Card>
+
+      <LanguageToggleButton />
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <LogOut size={16} color={colors.redDeep} />

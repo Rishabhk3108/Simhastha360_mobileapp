@@ -13,6 +13,7 @@ export interface PilgrimFields {
   pincode: string;
   country: string;
   medicalHistory: string;
+  isForeigner: boolean;
 }
 
 export const emptyPilgrimFields: PilgrimFields = {
@@ -30,4 +31,21 @@ export const emptyPilgrimFields: PilgrimFields = {
   pincode: "",
   country: "India",
   medicalHistory: "",
+  isForeigner: false,
+};
+
+export interface ForeignerFields {
+  name: string;
+  phone: string;
+  country: string;
+  password: string;
+  photoBase64: string | null;
+}
+
+export const emptyForeignerFields: ForeignerFields = {
+  name: "",
+  phone: "",
+  country: "",
+  password: "",
+  photoBase64: null,
 };

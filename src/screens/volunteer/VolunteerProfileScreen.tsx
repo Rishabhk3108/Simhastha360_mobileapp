@@ -6,6 +6,7 @@ import { Star, Coins, LogOut } from "../../components/icons";
 import { Screen } from "../../components/Screen";
 import { Card } from "../../components/Card";
 import { PointsPill } from "../../components/PointsPill";
+import { LanguageToggleButton } from "../../components/LanguageToggleButton";
 import { getMyVolunteerStatus, type VolunteerProfile } from "../../api/volunteers";
 import { getMyPoints } from "../../api/tasks";
 import { useAuth } from "../../auth/AuthContext";
@@ -89,6 +90,8 @@ export function VolunteerProfileScreen() {
           </Card>
         </>
       )}
+
+      <LanguageToggleButton />
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <LogOut size={16} color={colors.redDeep} />

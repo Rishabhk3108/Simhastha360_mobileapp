@@ -13,6 +13,7 @@ import { VolunteerStatsScreen } from "../screens/volunteer/VolunteerStatsScreen"
 import { VolunteerProfileScreen } from "../screens/volunteer/VolunteerProfileScreen";
 import { GuardianHomeScreen } from "../screens/guardian/GuardianHomeScreen";
 import { GuardianProfileScreen } from "../screens/guardian/GuardianProfileScreen";
+import { ForeignerHomeScreen } from "../screens/foreigner/ForeignerHomeScreen";
 import { FloatingReportButton } from "../components/FloatingReportButton";
 import { SOSResponderOverlay } from "../components/SOSResponderOverlay";
 import { useAuth } from "../auth/AuthContext";
@@ -72,10 +73,12 @@ function GuardianTabs() {
 
 function PilgrimTabs({ showTasksTab }: { showTasksTab: boolean }) {
   const { t } = useTranslation();
+  const { profile } = usePilgrim();
+  const isForeigner = !!profile?.pilgrim.isForeigner;
   return (
     <View style={{ flex: 1 }}>
       <Tab.Navigator screenOptions={tabScreenOptions()}>
-        <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: t("rootNavigation.home"), tabBarIcon: ({ color, size }) => <MapTrifold size={size} color={color} weight="fill" /> }} />
+        <Tab.Screen name="Home" component={isForeigner ? ForeignerHomeScreen : HomeScreen} options={{ tabBarLabel: t("rootNavigation.home"), tabBarIcon: ({ color, size }) => <MapTrifold size={size} color={color} weight="fill" /> }} />
         <Tab.Screen name="Find Help" component={FindHelpScreen} options={{ tabBarLabel: t("rootNavigation.findHelp"), tabBarIcon: ({ color, size }) => <Lifebuoy size={size} color={color} /> }} />
         <Tab.Screen name="Safety" component={SafetyScreen} options={{ tabBarLabel: t("rootNavigation.safety"), tabBarIcon: ({ color, size }) => <Lifebuoy size={size} color={color} weight="fill" /> }} />
         {showTasksTab && (
