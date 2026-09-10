@@ -12,6 +12,7 @@ import { VolunteerNotificationsScreen } from "../screens/volunteer/VolunteerNoti
 import { VolunteerStatsScreen } from "../screens/volunteer/VolunteerStatsScreen";
 import { VolunteerProfileScreen } from "../screens/volunteer/VolunteerProfileScreen";
 import { FloatingReportButton } from "../components/FloatingReportButton";
+import { SOSResponderOverlay } from "../components/SOSResponderOverlay";
 import { useAuth } from "../auth/AuthContext";
 import { usePilgrim } from "../pilgrim/PilgrimContext";
 import { colors, fonts } from "../theme";
@@ -44,13 +45,16 @@ function tabScreenOptions() {
 
 function VolunteerTabs() {
   return (
-    <Tab.Navigator screenOptions={tabScreenOptions()}>
-      <Tab.Screen name="Home" component={VolunteerHomeScreen} options={{ tabBarIcon: ({ color, size }) => <ClipboardText size={size} color={color} weight="fill" /> }} />
-      <Tab.Screen name="Notifications" component={VolunteerNotificationsScreen} options={{ tabBarIcon: ({ color, size }) => <Bell size={size} color={color} /> }} />
-      <Tab.Screen name="Stats" component={VolunteerStatsScreen} options={{ tabBarIcon: ({ color, size }) => <ChartBar size={size} color={color} /> }} />
-      <Tab.Screen name="Assistant" component={AIAssistantScreen} options={{ tabBarIcon: ({ color, size }) => <Sparkle size={size} color={color} weight="fill" /> }} />
-      <Tab.Screen name="Profile" component={VolunteerProfileScreen} options={{ tabBarIcon: ({ color, size }) => <UserCircle size={size} color={color} /> }} />
-    </Tab.Navigator>
+    <View style={{ flex: 1 }}>
+      <Tab.Navigator screenOptions={tabScreenOptions()}>
+        <Tab.Screen name="Home" component={VolunteerHomeScreen} options={{ tabBarIcon: ({ color, size }) => <ClipboardText size={size} color={color} weight="fill" /> }} />
+        <Tab.Screen name="Notifications" component={VolunteerNotificationsScreen} options={{ tabBarIcon: ({ color, size }) => <Bell size={size} color={color} /> }} />
+        <Tab.Screen name="Stats" component={VolunteerStatsScreen} options={{ tabBarIcon: ({ color, size }) => <ChartBar size={size} color={color} /> }} />
+        <Tab.Screen name="Assistant" component={AIAssistantScreen} options={{ tabBarIcon: ({ color, size }) => <Sparkle size={size} color={color} weight="fill" /> }} />
+        <Tab.Screen name="Profile" component={VolunteerProfileScreen} options={{ tabBarIcon: ({ color, size }) => <UserCircle size={size} color={color} /> }} />
+      </Tab.Navigator>
+      <SOSResponderOverlay />
+    </View>
   );
 }
 
@@ -70,6 +74,9 @@ function PilgrimTabs({ showTasksTab }: { showTasksTab: boolean }) {
       {/* Field team members respond to reports, they don't file them - so the
           floating reporter button only shows for actual pilgrims/guardians. */}
       {!showTasksTab && <FloatingReportButton />}
+      {/* Field team are always emergency-eligible responders (no opt-in
+          toggle, unlike volunteers), so they get the same overlay. */}
+      {showTasksTab && <SOSResponderOverlay />}
     </View>
   );
 }

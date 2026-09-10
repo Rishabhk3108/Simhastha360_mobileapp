@@ -65,10 +65,19 @@ export function VolunteerHomeScreen() {
 
   async function toggleOnDuty(value: boolean) {
     try {
-      const profile = await updateMyAvailability(value);
+      const profile = await updateMyAvailability({ on_duty: value });
       setMe(profile);
     } catch {
       Alert.alert("Could not update availability", "Please try again.");
+    }
+  }
+
+  async function toggleAcceptsEmergencies(value: boolean) {
+    try {
+      const profile = await updateMyAvailability({ accepts_emergencies: value });
+      setMe(profile);
+    } catch {
+      Alert.alert("Could not update this setting", "Please try again.");
     }
   }
 
@@ -96,6 +105,23 @@ export function VolunteerHomeScreen() {
             <Switch value={me.on_duty} onValueChange={toggleOnDuty} trackColor={{ true: colors.teal, false: colors.border }} />
           </View>
           <Text style={styles.muted}>Your manager only assigns tasks to volunteers marked available.</Text>
+
+          <View style={[styles.dutyRow, { marginTop: 14 }]}>
+            <View style={{ flex: 1, paddingRight: 10 }}>
+              <View style={styles.emergencyLabelRow}>
+                <WarningCircle size={14} color={colors.redDeep} weight="fill" />
+                <Text style={styles.dutyLabel}>Ready to accept emergencies</Text>
+              </View>
+              <Text style={styles.muted}>
+                If on, you may be paged for a nearby SOS while on duty. You won't be able to decline once assigned.
+              </Text>
+            </View>
+            <Switch
+              value={me.accepts_emergencies}
+              onValueChange={toggleAcceptsEmergencies}
+              trackColor={{ true: colors.redDeep, false: colors.border }}
+            />
+          </View>
         </Card>
       )}
 
@@ -181,6 +207,7 @@ const styles = StyleSheet.create({
   loadingWrap: { alignItems: "center", gap: 8, paddingVertical: 24 },
   dutyRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   dutyLabel: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.ink },
+  emergencyLabelRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 },
   priorityRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 },
   priorityText: { fontFamily: fonts.bodyBold, fontSize: 11, letterSpacing: 0.6, textTransform: "uppercase", color: colors.redDeep },
   description: { fontFamily: fonts.bodyMedium, fontSize: 15.5, color: colors.ink, marginBottom: 8, lineHeight: 22 },

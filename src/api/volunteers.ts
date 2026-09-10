@@ -39,6 +39,7 @@ export interface VolunteerProfile {
   review_note: string | null;
   rating: number | null;
   on_duty: boolean;
+  accepts_emergencies: boolean;
   preferred_zone_id: number | null;
   current_lat: number | null;
   current_lng: number | null;
@@ -97,7 +98,10 @@ export async function getMyVolunteerStatus(): Promise<VolunteerProfile> {
   return data;
 }
 
-export async function updateMyAvailability(onDuty: boolean): Promise<VolunteerProfile> {
-  const { data } = await api.patch<VolunteerProfile>("/volunteers/me/availability", { on_duty: onDuty });
+export async function updateMyAvailability(payload: {
+  on_duty?: boolean;
+  accepts_emergencies?: boolean;
+}): Promise<VolunteerProfile> {
+  const { data } = await api.patch<VolunteerProfile>("/volunteers/me/availability", payload);
   return data;
 }
