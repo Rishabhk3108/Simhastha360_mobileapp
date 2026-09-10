@@ -1,4 +1,4 @@
-import { Image, StyleSheet } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MapTrifold, Lifebuoy, Sparkle, UserCircle, ClipboardText, Bell, ChartBar } from "../components/icons";
 import { HomeScreen } from "../screens/HomeScreen";
@@ -11,6 +11,7 @@ import { VolunteerHomeScreen } from "../screens/volunteer/VolunteerHomeScreen";
 import { VolunteerNotificationsScreen } from "../screens/volunteer/VolunteerNotificationsScreen";
 import { VolunteerStatsScreen } from "../screens/volunteer/VolunteerStatsScreen";
 import { VolunteerProfileScreen } from "../screens/volunteer/VolunteerProfileScreen";
+import { FloatingReportButton } from "../components/FloatingReportButton";
 import { useAuth } from "../auth/AuthContext";
 import { usePilgrim } from "../pilgrim/PilgrimContext";
 import { colors, fonts } from "../theme";
@@ -55,16 +56,21 @@ function VolunteerTabs() {
 
 function PilgrimTabs({ showTasksTab }: { showTasksTab: boolean }) {
   return (
-    <Tab.Navigator screenOptions={tabScreenOptions()}>
-      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarIcon: ({ color, size }) => <MapTrifold size={size} color={color} weight="fill" /> }} />
-      <Tab.Screen name="Find Help" component={FindHelpScreen} options={{ tabBarIcon: ({ color, size }) => <Lifebuoy size={size} color={color} /> }} />
-      <Tab.Screen name="Safety" component={SafetyScreen} options={{ tabBarIcon: ({ color, size }) => <Lifebuoy size={size} color={color} weight="fill" /> }} />
-      {showTasksTab && (
-        <Tab.Screen name="Tasks" component={TasksScreen} options={{ tabBarIcon: ({ color, size }) => <ClipboardText size={size} color={color} weight="fill" /> }} />
-      )}
-      <Tab.Screen name="Assistant" component={AIAssistantScreen} options={{ tabBarIcon: ({ color, size }) => <Sparkle size={size} color={color} weight="fill" /> }} />
-      <Tab.Screen name="Account" component={AccountScreen} options={{ tabBarIcon: ({ color, size }) => <AccountTabIcon color={color} size={size} /> }} />
-    </Tab.Navigator>
+    <View style={{ flex: 1 }}>
+      <Tab.Navigator screenOptions={tabScreenOptions()}>
+        <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarIcon: ({ color, size }) => <MapTrifold size={size} color={color} weight="fill" /> }} />
+        <Tab.Screen name="Find Help" component={FindHelpScreen} options={{ tabBarIcon: ({ color, size }) => <Lifebuoy size={size} color={color} /> }} />
+        <Tab.Screen name="Safety" component={SafetyScreen} options={{ tabBarIcon: ({ color, size }) => <Lifebuoy size={size} color={color} weight="fill" /> }} />
+        {showTasksTab && (
+          <Tab.Screen name="Tasks" component={TasksScreen} options={{ tabBarIcon: ({ color, size }) => <ClipboardText size={size} color={color} weight="fill" /> }} />
+        )}
+        <Tab.Screen name="Assistant" component={AIAssistantScreen} options={{ tabBarIcon: ({ color, size }) => <Sparkle size={size} color={color} weight="fill" /> }} />
+        <Tab.Screen name="Account" component={AccountScreen} options={{ tabBarIcon: ({ color, size }) => <AccountTabIcon color={color} size={size} /> }} />
+      </Tab.Navigator>
+      {/* Field team members respond to reports, they don't file them - so the
+          floating reporter button only shows for actual pilgrims/guardians. */}
+      {!showTasksTab && <FloatingReportButton />}
+    </View>
   );
 }
 
