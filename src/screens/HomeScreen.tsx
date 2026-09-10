@@ -22,7 +22,7 @@ import { CrowdBadge } from "../components/CrowdBadge";
 import { colors, fonts } from "../theme";
 import { advanceStep, distanceToRouteM, formatDistance, OFF_ROUTE_THRESHOLD_M } from "../navigation/turnByTurn";
 import { zonesContainingPoint, worstZone } from "../utils/zoneAlerts";
-import type { CrowdLevel, ParkingZone, VehicleType, Zone } from "../api/types";
+import type { CrowdLevel, Facility, FacilityType, ParkingZone, VehicleType, Zone } from "../api/types";
 
 const VEHICLE_OPTIONS: { type: VehicleType; label: string }[] = [
   { type: "two_wheeler", label: "Two-wheeler" },
@@ -34,9 +34,13 @@ const VEHICLE_OPTIONS: { type: VehicleType; label: string }[] = [
 const UJJAIN_FALLBACK = { lat: 23.1815, lng: 75.7684 };
 const REROUTE_COOLDOWN_MS = 8000;
 
-// A marked zone matched by name is routed to directly by its stored
-// coordinates - it isn't a real Mappls place, so it carries no eLoc.
-type SearchResult = PlaceResult & { zoneCoords?: { lat: number; lng: number }; zoneCrowdLevel?: CrowdLevel };
+// A marked zone or facility matched by name is routed to directly by its
+// stored coordinates - neither is a real Mappls place, so they carry no eLoc.
+type SearchResult = PlaceResult & {
+  localCoords?: { lat: number; lng: number };
+  zoneCrowdLevel?: CrowdLevel;
+  facilityType?: FacilityType;
+};
 
 type ZoneModalState =
   | { stage: "warning"; severity: CrowdLevel; title: string; message: string }
@@ -48,6 +52,7 @@ export function HomeScreen() {
   const [liveCoords, setLiveCoords] = useState<{ lat: number; lng: number } | null>(null);
   const mapRef = useRef<MapplsMapHandle>(null);
   const [zones, setZones] = useState<Zone[]>([]);
+  const [facilities, setFacilities] = useState<Facility[]>([]);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
@@ -89,6 +94,15 @@ export function HomeScreen() {
     }
   }, []);
 
+  const loadFacilities = useCallback(async () => {
+    try {
+      const { data } = await api.get<Facility[]>("/facilities");
+      setFacilities(data);
+    } catch {
+      // non-critical for the map itself
+    }
+  }, []);
+
   // Polls while the map screen is focused so an admin-marked zone (e.g. a
   // new red zone) shows up live, matching the 15s refresh the admin web
   // dashboard already uses - stops polling when the user navigates away.
@@ -96,12 +110,14 @@ export function HomeScreen() {
     useCallback(() => {
       loadZones();
       loadParkingZones();
+      loadFacilities();
       const interval = setInterval(() => {
         loadZones();
         loadParkingZones();
+        loadFacilities();
       }, 15000);
       return () => clearInterval(interval);
-    }, [loadZones, loadParkingZones]),
+    }, [loadZones, loadParkingZones, loadFacilities]),
   );
 
   useEffect(() => {
@@ -127,21 +143,31 @@ export function HomeScreen() {
           eLoc: `zone-${z.id}`,
           placeName: z.name,
           placeAddress: "Marked zone",
-          zoneCoords: { lat: z.center_lat, lng: z.center_lng },
+          localCoords: { lat: z.center_lat, lng: z.center_lng },
           zoneCrowdLevel: z.crowd_level,
         }));
+      const facilityMatches: SearchResult[] = facilities
+        .filter((f) => f.name.toLowerCase().includes(needle))
+        .map((f) => ({
+          eLoc: `facility-${f.id}`,
+          placeName: f.name,
+          placeAddress: f.type.replace("_", " "),
+          localCoords: { lat: f.lat, lng: f.lng },
+          facilityType: f.type,
+        }));
+      const localMatches = [...zoneMatches, ...facilityMatches];
       try {
         const found = await searchPlaces(query, liveCoords ?? coords ?? undefined);
-        setResults([...zoneMatches, ...found]);
+        setResults([...localMatches, ...found]);
       } catch {
-        setResults(zoneMatches);
+        setResults(localMatches);
       } finally {
         setSearching(false);
       }
     }, 450);
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, zones]);
+  }, [query, zones, facilities]);
 
   // Live turn-by-turn progress: advance through steps and watch for the
   // traveler drifting off the planned route, using the map's own native GPS
@@ -243,7 +269,7 @@ export function HomeScreen() {
     skipNextSearchRef.current = true;
     setQuery(place.placeName);
     setResults([]);
-    await routeTo(place.zoneCoords ?? { eLoc: place.eLoc }, place);
+    await routeTo(place.localCoords ?? { eLoc: place.eLoc }, place);
   }
 
   async function routeToParkingZone(zone: ParkingZone) {
@@ -382,6 +408,7 @@ export function HomeScreen() {
         navigating={navigating}
         zones={zones}
         parkingZones={parkingZones}
+        facilities={facilities}
         onUserLocationUpdate={(location) => setLiveCoords({ lat: location.lat, lng: location.lng })}
       />
 

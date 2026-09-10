@@ -13,13 +13,21 @@ import {
 } from "mappls-map-react-native";
 import { colors, fonts } from "../theme";
 import { circlePolygonLngLat } from "../utils/geoCircle";
-import type { ParkingZone, Zone } from "../api/types";
+import type { Facility, FacilityType, ParkingZone, Zone } from "../api/types";
 
 function isParkingFull(z: ParkingZone): boolean {
   const capacity = z.capacity_two_wheeler + z.capacity_three_wheeler + z.capacity_four_wheeler + z.capacity_six_wheeler;
   const occupied = z.occupied_two_wheeler + z.occupied_three_wheeler + z.occupied_four_wheeler + z.occupied_six_wheeler;
   return capacity > 0 && occupied >= capacity;
 }
+
+const FACILITY_BADGE: Record<FacilityType, { letter: string; color: string }> = {
+  medical: { letter: "M", color: colors.tealDeep },
+  toilet: { letter: "T", color: colors.muted },
+  water: { letter: "W", color: colors.teal },
+  help_desk: { letter: "H", color: colors.saffronDeep },
+  parking: { letter: "P", color: colors.pinkDeep },
+};
 
 // This package's coordinate arrays are always [lng, lat] (confirmed via the
 // package's own Camera/MapView/GettingStarted docs) - the rest of the app
@@ -42,6 +50,7 @@ interface Props {
   navigating?: boolean;
   zones?: Zone[];
   parkingZones?: ParkingZone[];
+  facilities?: Facility[];
   onReady?: () => void;
   onUserLocationUpdate?: (location: { lat: number; lng: number; heading?: number }) => void;
 }
@@ -49,7 +58,7 @@ interface Props {
 const ZONE_COLORS = { red: colors.red, yellow: colors.yellow, green: colors.green } as const;
 
 export const MapplsMapView = forwardRef<MapplsMapHandle, Props>(
-  ({ initialLat, initialLng, navigating = false, zones = [], parkingZones = [], onReady, onUserLocationUpdate }, ref) => {
+  ({ initialLat, initialLng, navigating = false, zones = [], parkingZones = [], facilities = [], onReady, onUserLocationUpdate }, ref) => {
   const cameraRef = useRef<CameraRef>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -210,6 +219,17 @@ export const MapplsMapView = forwardRef<MapplsMapHandle, Props>(
           </PointAnnotation>
         ))}
 
+        {facilities.map((f) => {
+          const badge = FACILITY_BADGE[f.type];
+          return (
+            <PointAnnotation key={`facility-${f.id}`} id={`facility-${f.id}`} coordinate={toLngLat(f.lat, f.lng)} title={f.name}>
+              <View style={[styles.facilityBadge, { backgroundColor: badge.color }]}>
+                <Text style={styles.facilityBadgeText}>{badge.letter}</Text>
+              </View>
+            </PointAnnotation>
+          );
+        })}
+
         {destination && (
           <PointAnnotation
             id="destination"
@@ -313,4 +333,15 @@ const styles = StyleSheet.create({
   },
   parkingBadgeFull: { backgroundColor: colors.redDeep },
   parkingBadgeText: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.surface },
+  facilityBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: colors.surface,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 4,
+  },
+  facilityBadgeText: { fontFamily: fonts.bodyBold, fontSize: 12, color: colors.surface },
 });
