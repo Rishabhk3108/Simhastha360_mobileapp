@@ -1,13 +1,34 @@
 import { useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { QrCode, UsersThree } from "../components/icons";
+import { QrCode, UsersThree, WarningCircle } from "../components/icons";
 import { Screen } from "../components/Screen";
 import { Card } from "../components/Card";
 import { PilgrimProfileCard } from "../components/PilgrimProfileCard";
 import { TextInput } from "../components/AppTextInput";
+import { ReportIssueModal } from "../components/ReportIssueModal";
 import { api } from "../api/client";
 import { getDeviceId } from "../device/deviceId";
 import { colors, fonts } from "../theme";
+
+function ReportIssueSection() {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <Card>
+      <View style={styles.titleRow}>
+        <WarningCircle size={16} color={colors.redDeep} weight="fill" />
+        <Text style={styles.cardTitle}>Report an issue</Text>
+      </View>
+      <Text style={styles.muted}>
+        See a hazard, a broken facility, or anything that needs attention? Report it with a photo and we'll act on it.
+      </Text>
+      <TouchableOpacity style={styles.primaryButton} onPress={() => setVisible(true)}>
+        <Text style={styles.primaryButtonText}>Report an issue</Text>
+      </TouchableOpacity>
+      <ReportIssueModal visible={visible} onClose={() => setVisible(false)} />
+    </Card>
+  );
+}
 
 function HealthCardSection() {
   const [name, setName] = useState("");
@@ -97,6 +118,7 @@ export function AccountScreen() {
   return (
     <Screen title="Account">
       <PilgrimProfileCard />
+      <ReportIssueSection />
       <HealthCardSection />
       <FamilyGroupSection />
     </Screen>
