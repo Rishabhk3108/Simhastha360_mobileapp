@@ -4,7 +4,7 @@ import { api } from "../api/client";
 
 interface AuthState {
   token: string | null;
-  role: "volunteer" | "field_team" | "admin" | null;
+  role: "volunteer" | "field_team" | "admin" | "guardian" | null;
   name: string | null;
   ready: boolean;
   login: (phone: string, password: string) => Promise<void>;

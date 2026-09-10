@@ -6,10 +6,7 @@ import type { OnboardingStackParamList } from "../../navigation/AppStack";
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, "AccountCheck">;
 
-export function AccountCheckScreen({ navigation, route }: Props) {
-  const { role } = route.params;
-  const registerRoute = role === "pilgrim" ? "PilgrimRegister" : "GuardianRegister";
-
+export function AccountCheckScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.content}>
@@ -22,7 +19,7 @@ export function AccountCheckScreen({ navigation, route }: Props) {
         <TouchableOpacity style={styles.primaryButton} onPress={() => navigation.navigate("SignIn")}>
           <Text style={styles.primaryButtonText}>Yes, sign me in</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate(registerRoute)}>
+        <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate("PilgrimRegister")}>
           <Text style={styles.secondaryButtonText}>No, this is my first time</Text>
         </TouchableOpacity>
       </View>

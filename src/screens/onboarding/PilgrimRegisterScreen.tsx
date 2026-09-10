@@ -2,8 +2,7 @@ import { useState } from "react";
 import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { PilgrimFieldsSection } from "./PilgrimFieldsSection";
-import { GuardianFieldsSection } from "./GuardianFieldsSection";
-import { emptyGuardianFields, emptyPilgrimFields } from "./types";
+import { emptyPilgrimFields } from "./types";
 import { registerPilgrim } from "../../api/pilgrims";
 import { usePilgrim } from "../../pilgrim/PilgrimContext";
 import { colors, fonts } from "../../theme";
@@ -13,7 +12,6 @@ type Props = NativeStackScreenProps<OnboardingStackParamList, "PilgrimRegister">
 
 export function PilgrimRegisterScreen({ navigation }: Props) {
   const [pilgrim, setPilgrim] = useState(emptyPilgrimFields);
-  const [guardian, setGuardian] = useState(emptyGuardianFields);
   const [passwordValid, setPasswordValid] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { setProfile } = usePilgrim();
@@ -27,14 +25,10 @@ export function PilgrimRegisterScreen({ navigation }: Props) {
       Alert.alert("Password required", "Choose a password of at least 8 characters, and confirm it.");
       return;
     }
-    if (!guardian.name || !guardian.phone || !guardian.aadharNumber || !guardian.relationToPilgrim) {
-      Alert.alert("Missing guardian details", "Please provide your guardian's name, phone, Aadhar number, and relation.");
-      return;
-    }
     setSubmitting(true);
     try {
-      const result = await registerPilgrim({ registeredVia: "self", pilgrim, guardian });
-      await setProfile({ pilgrimId: result.pilgrim_id, registeredVia: "self", pilgrim, guardian });
+      const result = await registerPilgrim(pilgrim);
+      await setProfile({ pilgrimId: result.pilgrim_id, pilgrim });
       navigation.replace("Main");
     } catch (err: any) {
       if (err.code === "ECONNABORTED") {
@@ -57,10 +51,11 @@ export function PilgrimRegisterScreen({ navigation }: Props) {
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.title}>Register as Pilgrim</Text>
-        <Text style={styles.subtitle}>Your details, plus a guardian we can contact in an emergency.</Text>
+        <Text style={styles.subtitle}>
+          Your details. You can add a guardian who'll get live safety updates on you afterward, from your profile.
+        </Text>
 
         <PilgrimFieldsSection values={pilgrim} onChange={setPilgrim} onPasswordValidityChange={setPasswordValid} title="Your details" />
-        <GuardianFieldsSection values={guardian} onChange={setGuardian} title="Your guardian's details" />
 
         <TouchableOpacity style={styles.submitButton} onPress={submit} disabled={submitting}>
           <Text style={styles.submitButtonText}>{submitting ? "Registering..." : "Complete registration"}</Text>

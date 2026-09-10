@@ -3,6 +3,7 @@ import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from "react-na
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { Card } from "./Card";
+import { AddGuardianModal } from "./AddGuardianModal";
 import { usePilgrim } from "../pilgrim/PilgrimContext";
 import { colors, fonts } from "../theme";
 
@@ -28,10 +29,11 @@ function DetailRow({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMa
 export function PilgrimProfileCard() {
   const { profile, clearProfile } = usePilgrim();
   const [expanded, setExpanded] = useState(false);
+  const [addGuardianVisible, setAddGuardianVisible] = useState(false);
   const navigation = useNavigation<any>();
 
   if (!profile) return null;
-  const { pilgrim, guardian, registeredVia } = profile;
+  const { pilgrim } = profile;
 
   const address = [pilgrim.addressLine1, pilgrim.addressLine2, pilgrim.city, pilgrim.state, pilgrim.pincode, pilgrim.country]
     .filter(Boolean)
@@ -63,9 +65,7 @@ export function PilgrimProfileCard() {
         )}
         <View style={{ flex: 1 }}>
           <Text style={styles.name}>{pilgrim.name}</Text>
-          <Text style={styles.subtitle}>
-            {registeredVia === "guardian" ? "Registered by guardian" : "Pilgrim"} · Age {pilgrim.age}
-          </Text>
+          <Text style={styles.subtitle}>Pilgrim · Age {pilgrim.age}</Text>
         </View>
         <Ionicons name={expanded ? "chevron-up" : "chevron-down"} size={20} color={colors.muted} />
       </TouchableOpacity>
@@ -79,9 +79,10 @@ export function PilgrimProfileCard() {
           {!!pilgrim.medicalHistory && <DetailRow icon="medkit-outline" label="Medical history" value={pilgrim.medicalHistory} />}
 
           <View style={styles.divider} />
-          <Text style={styles.sectionLabel}>Guardian / emergency contact</Text>
-          <DetailRow icon="person-outline" label={guardian.relationToPilgrim || "Guardian"} value={guardian.name} />
-          <DetailRow icon="call-outline" label="Guardian phone" value={guardian.phone} />
+          <TouchableOpacity style={styles.addGuardianButton} onPress={() => setAddGuardianVisible(true)}>
+            <Ionicons name="qr-code-outline" size={16} color={colors.teal} />
+            <Text style={styles.addGuardianButtonText}>Add guardian</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity style={styles.logoutButton} onPress={confirmLogout}>
             <Ionicons name="log-out-outline" size={16} color={colors.redDeep} />
@@ -89,6 +90,8 @@ export function PilgrimProfileCard() {
           </TouchableOpacity>
         </View>
       )}
+
+      <AddGuardianModal visible={addGuardianVisible} pilgrimId={profile.pilgrimId} onClose={() => setAddGuardianVisible(false)} />
     </Card>
   );
 }
@@ -107,6 +110,16 @@ const styles = StyleSheet.create({
   detailValue: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.ink, marginTop: 1 },
   divider: { height: 1, backgroundColor: colors.border, marginVertical: 6 },
   sectionLabel: { fontFamily: fonts.bodyMedium, fontSize: 11, color: colors.muted, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 2 },
+  addGuardianButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    backgroundColor: colors.tealTint,
+    borderRadius: 10,
+    paddingVertical: 11,
+  },
+  addGuardianButtonText: { fontFamily: fonts.bodyMedium, fontSize: 13.5, color: colors.teal },
   logoutButton: {
     flexDirection: "row",
     alignItems: "center",

@@ -38,6 +38,12 @@
           "photosPermission": "Simhastha 360 uses your photo library to attach a photo to your pilgrim registration.",
           "cameraPermission": "Simhastha 360 uses your camera to take a photo for your pilgrim registration."
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Simhastha 360 uses your camera to scan a pilgrim's guardian-link QR code."
+        }
       ]
     ]
   }

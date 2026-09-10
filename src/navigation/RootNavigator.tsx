@@ -1,6 +1,6 @@
 import { Image, StyleSheet, View } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { MapTrifold, Lifebuoy, UserCircle, ClipboardText, Bell, ChartBar } from "../components/icons";
+import { MapTrifold, Lifebuoy, UserCircle, ClipboardText, Bell, ChartBar, UsersThree } from "../components/icons";
 import { HomeScreen } from "../screens/HomeScreen";
 import { FindHelpScreen } from "../screens/FindHelpScreen";
 import { SafetyScreen } from "../screens/SafetyScreen";
@@ -10,6 +10,8 @@ import { VolunteerHomeScreen } from "../screens/volunteer/VolunteerHomeScreen";
 import { VolunteerNotificationsScreen } from "../screens/volunteer/VolunteerNotificationsScreen";
 import { VolunteerStatsScreen } from "../screens/volunteer/VolunteerStatsScreen";
 import { VolunteerProfileScreen } from "../screens/volunteer/VolunteerProfileScreen";
+import { GuardianHomeScreen } from "../screens/guardian/GuardianHomeScreen";
+import { GuardianProfileScreen } from "../screens/guardian/GuardianProfileScreen";
 import { FloatingReportButton } from "../components/FloatingReportButton";
 import { SOSResponderOverlay } from "../components/SOSResponderOverlay";
 import { useAuth } from "../auth/AuthContext";
@@ -56,6 +58,15 @@ function VolunteerTabs() {
   );
 }
 
+function GuardianTabs() {
+  return (
+    <Tab.Navigator screenOptions={tabScreenOptions()}>
+      <Tab.Screen name="My People" component={GuardianHomeScreen} options={{ tabBarIcon: ({ color, size }) => <UsersThree size={size} color={color} weight="fill" /> }} />
+      <Tab.Screen name="Profile" component={GuardianProfileScreen} options={{ tabBarIcon: ({ color, size }) => <UserCircle size={size} color={color} /> }} />
+    </Tab.Navigator>
+  );
+}
+
 function PilgrimTabs({ showTasksTab }: { showTasksTab: boolean }) {
   return (
     <View style={{ flex: 1 }}>
@@ -82,5 +93,6 @@ export function RootNavigator() {
   const { role } = useAuth();
 
   if (role === "volunteer") return <VolunteerTabs />;
+  if (role === "guardian") return <GuardianTabs />;
   return <PilgrimTabs showTasksTab={role === "field_team"} />;
 }

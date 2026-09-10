@@ -15,14 +15,6 @@ export interface PilgrimFields {
   medicalHistory: string;
 }
 
-export interface GuardianFields {
-  name: string;
-  phone: string;
-  aadharNumber: string;
-  email: string;
-  relationToPilgrim: string;
-}
-
 export const emptyPilgrimFields: PilgrimFields = {
   name: "",
   phone: "",
@@ -38,12 +30,4 @@ export const emptyPilgrimFields: PilgrimFields = {
   pincode: "",
   country: "India",
   medicalHistory: "",
-};
-
-export const emptyGuardianFields: GuardianFields = {
-  name: "",
-  phone: "",
-  aadharNumber: "",
-  email: "",
-  relationToPilgrim: "",
 };

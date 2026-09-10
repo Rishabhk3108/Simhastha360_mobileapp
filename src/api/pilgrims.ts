@@ -1,18 +1,11 @@
 import { api } from "./client";
 import { getDeviceId } from "../device/deviceId";
-import type { GuardianFields, PilgrimFields } from "../screens/onboarding/types";
+import type { PilgrimFields } from "../screens/onboarding/types";
 import type { PilgrimProfile } from "../pilgrim/PilgrimContext";
 
-interface RegisterArgs {
-  registeredVia: "self" | "guardian";
-  pilgrim: PilgrimFields;
-  guardian: GuardianFields;
-}
-
-export async function registerPilgrim({ registeredVia, pilgrim, guardian }: RegisterArgs) {
+export async function registerPilgrim(pilgrim: PilgrimFields): Promise<{ pilgrim_id: number; name: string; created_at: string }> {
   const deviceId = await getDeviceId();
   const { data } = await api.post("/pilgrims/register", {
-    registered_via: registeredVia,
     device_id: deviceId,
     pilgrim: {
       name: pilgrim.name,
@@ -30,15 +23,8 @@ export async function registerPilgrim({ registeredVia, pilgrim, guardian }: Regi
       country: pilgrim.country || "India",
       medical_history: pilgrim.medicalHistory || undefined,
     },
-    guardian: {
-      name: guardian.name,
-      phone: guardian.phone,
-      aadhar_number: guardian.aadharNumber,
-      email: guardian.email || undefined,
-      relation_to_pilgrim: guardian.relationToPilgrim,
-    },
   });
-  return data as { pilgrim_id: number; guardian_id: number; name: string; registered_via: string; created_at: string };
+  return data;
 }
 
 export async function loginPilgrim(aadharNumber: string, password: string): Promise<PilgrimProfile> {
@@ -46,7 +32,6 @@ export async function loginPilgrim(aadharNumber: string, password: string): Prom
 
   return {
     pilgrimId: data.pilgrim_id,
-    registeredVia: data.registered_via,
     pilgrim: {
       name: data.pilgrim.name,
       phone: data.pilgrim.phone,
@@ -63,12 +48,15 @@ export async function loginPilgrim(aadharNumber: string, password: string): Prom
       country: data.pilgrim.country,
       medicalHistory: data.pilgrim.medical_history ?? "",
     },
-    guardian: {
-      name: data.guardian.name,
-      phone: data.guardian.phone,
-      aadharNumber: data.guardian.aadhar_number,
-      email: data.guardian.email ?? "",
-      relationToPilgrim: data.guardian.relation_to_pilgrim,
-    },
   };
+}
+
+export async function createGuardianLinkToken(pilgrimId: number): Promise<{ token: string; expires_at: string }> {
+  const { data } = await api.post(`/pilgrims/${pilgrimId}/link-token`);
+  return data;
+}
+
+export async function updateMyPilgrimLocation(pilgrimId: number, lat: number, lng: number): Promise<void> {
+  const deviceId = await getDeviceId();
+  await api.patch(`/pilgrims/${pilgrimId}/location`, { device_id: deviceId, lat, lng });
 }

@@ -17,19 +17,19 @@ export function RoleSelectionScreen({ navigation }: Props) {
         <Text style={styles.title}>Welcome to Simhastha 360</Text>
         <Text style={styles.subtitle}>Tell us who you are so we can set you up correctly.</Text>
 
-        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("AccountCheck", { role: "pilgrim" })}>
+        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("AccountCheck")}>
           <Ionicons name="walk-outline" size={28} color={colors.saffronDeep} />
           <View style={{ flex: 1 }}>
             <Text style={styles.cardTitle}>I am a Pilgrim</Text>
-            <Text style={styles.cardSubtitle}>Register yourself, with a guardian's contact for safety.</Text>
+            <Text style={styles.cardSubtitle}>Register yourself for Simhastha.</Text>
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("AccountCheck", { role: "guardian" })}>
+        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("GuardianEntry")}>
           <Ionicons name="people-outline" size={28} color={colors.teal} />
           <View style={{ flex: 1 }}>
             <Text style={styles.cardTitle}>I am a Guardian</Text>
-            <Text style={styles.cardSubtitle}>Register on behalf of a pilgrim (elderly parent, child, etc.)</Text>
+            <Text style={styles.cardSubtitle}>Track a family member's safety updates while they're at Simhastha.</Text>
           </View>
         </TouchableOpacity>
 

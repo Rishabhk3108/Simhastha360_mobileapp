@@ -4,7 +4,9 @@ import { RoleSelectionScreen } from "../screens/onboarding/RoleSelectionScreen";
 import { AccountCheckScreen } from "../screens/onboarding/AccountCheckScreen";
 import { SignInScreen } from "../screens/onboarding/SignInScreen";
 import { PilgrimRegisterScreen } from "../screens/onboarding/PilgrimRegisterScreen";
-import { GuardianRegisterScreen } from "../screens/onboarding/GuardianRegisterScreen";
+import { GuardianEntryScreen } from "../screens/onboarding/guardian/GuardianEntryScreen";
+import { GuardianLoginScreen } from "../screens/onboarding/guardian/GuardianLoginScreen";
+import { GuardianRegisterScreen } from "../screens/onboarding/guardian/GuardianRegisterScreen";
 import { VolunteerEntryScreen } from "../screens/onboarding/volunteer/VolunteerEntryScreen";
 import { VolunteerLoginScreen } from "../screens/onboarding/volunteer/VolunteerLoginScreen";
 import { VolunteerRegisterScreen } from "../screens/onboarding/volunteer/VolunteerRegisterScreen";
@@ -14,9 +16,11 @@ import { RootNavigator } from "./RootNavigator";
 export type OnboardingStackParamList = {
   Splash: undefined;
   RoleSelection: undefined;
-  AccountCheck: { role: "pilgrim" | "guardian" };
+  AccountCheck: undefined;
   SignIn: undefined;
   PilgrimRegister: undefined;
+  GuardianEntry: undefined;
+  GuardianLogin: undefined;
   GuardianRegister: undefined;
   VolunteerEntry: undefined;
   VolunteerLogin: undefined;
@@ -35,6 +39,8 @@ export function AppStack() {
       <Stack.Screen name="AccountCheck" component={AccountCheckScreen} />
       <Stack.Screen name="SignIn" component={SignInScreen} />
       <Stack.Screen name="PilgrimRegister" component={PilgrimRegisterScreen} />
+      <Stack.Screen name="GuardianEntry" component={GuardianEntryScreen} />
+      <Stack.Screen name="GuardianLogin" component={GuardianLoginScreen} />
       <Stack.Screen name="GuardianRegister" component={GuardianRegisterScreen} />
       <Stack.Screen name="VolunteerEntry" component={VolunteerEntryScreen} />
       <Stack.Screen name="VolunteerLogin" component={VolunteerLoginScreen} />

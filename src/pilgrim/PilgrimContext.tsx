@@ -1,13 +1,11 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api } from "../api/client";
-import type { GuardianFields, PilgrimFields } from "../screens/onboarding/types";
+import type { PilgrimFields } from "../screens/onboarding/types";
 
 export interface PilgrimProfile {
   pilgrimId: number;
-  registeredVia: "self" | "guardian";
   pilgrim: PilgrimFields;
-  guardian: GuardianFields;
 }
 
 interface PilgrimIdentity {
