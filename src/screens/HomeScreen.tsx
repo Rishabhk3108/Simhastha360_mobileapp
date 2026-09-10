@@ -34,6 +34,10 @@ const VEHICLE_OPTIONS: { type: VehicleType; label: string }[] = [
 const UJJAIN_FALLBACK = { lat: 23.1815, lng: 75.7684 };
 const REROUTE_COOLDOWN_MS = 8000;
 
+// A marked zone matched by name is routed to directly by its stored
+// coordinates - it isn't a real Mappls place, so it carries no eLoc.
+type SearchResult = PlaceResult & { zoneCoords?: { lat: number; lng: number }; zoneCrowdLevel?: CrowdLevel };
+
 type ZoneModalState =
   | { stage: "warning"; severity: CrowdLevel; title: string; message: string }
   | { stage: "searching" }
@@ -45,7 +49,7 @@ export function HomeScreen() {
   const mapRef = useRef<MapplsMapHandle>(null);
   const [zones, setZones] = useState<Zone[]>([]);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<PlaceResult[]>([]);
+  const [results, setResults] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [destination, setDestination] = useState<PlaceResult | null>(null);
   const [route, setRoute] = useState<RouteResult | null>(null);
@@ -116,18 +120,28 @@ export function HomeScreen() {
     }
     const timeout = setTimeout(async () => {
       setSearching(true);
+      const needle = query.trim().toLowerCase();
+      const zoneMatches: SearchResult[] = zones
+        .filter((z) => z.name.toLowerCase().includes(needle))
+        .map((z) => ({
+          eLoc: `zone-${z.id}`,
+          placeName: z.name,
+          placeAddress: "Marked zone",
+          zoneCoords: { lat: z.center_lat, lng: z.center_lng },
+          zoneCrowdLevel: z.crowd_level,
+        }));
       try {
         const found = await searchPlaces(query, liveCoords ?? coords ?? undefined);
-        setResults(found);
+        setResults([...zoneMatches, ...found]);
       } catch {
-        setResults([]);
+        setResults(zoneMatches);
       } finally {
         setSearching(false);
       }
     }, 450);
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query]);
+  }, [query, zones]);
 
   // Live turn-by-turn progress: advance through steps and watch for the
   // traveler drifting off the planned route, using the map's own native GPS
@@ -225,11 +239,11 @@ export function HomeScreen() {
     }
   }
 
-  async function selectDestination(place: PlaceResult) {
+  async function selectDestination(place: SearchResult) {
     skipNextSearchRef.current = true;
     setQuery(place.placeName);
     setResults([]);
-    await routeTo({ eLoc: place.eLoc }, place);
+    await routeTo(place.zoneCoords ?? { eLoc: place.eLoc }, place);
   }
 
   async function routeToParkingZone(zone: ParkingZone) {
@@ -411,10 +425,13 @@ export function HomeScreen() {
             <View style={styles.resultsCard}>
               {results.map((r) => (
                 <TouchableOpacity key={r.eLoc} style={styles.resultRow} onPress={() => selectDestination(r)}>
-                  <Text style={styles.resultName}>{r.placeName}</Text>
-                  <Text style={styles.resultAddress} numberOfLines={1}>
-                    {r.placeAddress}
-                  </Text>
+                  <View style={styles.resultRowMain}>
+                    <Text style={styles.resultName}>{r.placeName}</Text>
+                    <Text style={styles.resultAddress} numberOfLines={1}>
+                      {r.placeAddress}
+                    </Text>
+                  </View>
+                  {r.zoneCrowdLevel && <CrowdBadge level={r.zoneCrowdLevel} />}
                 </TouchableOpacity>
               ))}
             </View>
@@ -668,7 +685,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 4,
   },
-  resultRow: { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.border },
+  resultRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  resultRowMain: { flex: 1, minWidth: 0 },
   resultName: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.ink },
   resultAddress: { fontFamily: fonts.body, fontSize: 12, color: colors.muted, marginTop: 2 },
   badgeRow: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
