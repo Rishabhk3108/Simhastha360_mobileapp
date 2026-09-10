@@ -18,6 +18,7 @@ import { searchPlaces, getDirections, findClearRoute, getWalkingRoute, type Plac
 import { getParkingZones, createParkingBooking, findNearestAvailable } from "../api/parking";
 import { api } from "../api/client";
 import { useLocation } from "../location/useLocation";
+import { haversineKm } from "../location/geo";
 import { CrowdBadge } from "../components/CrowdBadge";
 import { colors, fonts } from "../theme";
 import { advanceStep, distanceToRouteM, formatDistance, OFF_ROUTE_THRESHOLD_M } from "../navigation/turnByTurn";
@@ -40,6 +41,7 @@ type SearchResult = PlaceResult & {
   localCoords?: { lat: number; lng: number };
   zoneCrowdLevel?: CrowdLevel;
   facilityType?: FacilityType;
+  distanceKm?: number;
 };
 
 type ZoneModalState =
@@ -137,6 +139,9 @@ export function HomeScreen() {
     const timeout = setTimeout(async () => {
       setSearching(true);
       const needle = query.trim().toLowerCase();
+      const from = liveCoords ?? coords ?? null;
+      const distanceTo = (lat: number, lng: number) => (from ? haversineKm(from.lat, from.lng, lat, lng) : undefined);
+
       const zoneMatches: SearchResult[] = zones
         .filter((z) => z.name.toLowerCase().includes(needle))
         .map((z) => ({
@@ -145,6 +150,7 @@ export function HomeScreen() {
           placeAddress: "Marked zone",
           localCoords: { lat: z.center_lat, lng: z.center_lng },
           zoneCrowdLevel: z.crowd_level,
+          distanceKm: distanceTo(z.center_lat, z.center_lng),
         }));
       const facilityMatches: SearchResult[] = facilities
         .filter((f) => f.name.toLowerCase().includes(needle))
@@ -154,8 +160,13 @@ export function HomeScreen() {
           placeAddress: f.type.replace("_", " "),
           localCoords: { lat: f.lat, lng: f.lng },
           facilityType: f.type,
+          distanceKm: distanceTo(f.lat, f.lng),
         }));
-      const localMatches = [...zoneMatches, ...facilityMatches];
+      // Nearest first - with 10 facilities all named "Toilet", the closest
+      // one belongs at the top, not wherever it happened to be created.
+      const localMatches = [...zoneMatches, ...facilityMatches].sort(
+        (a, b) => (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity),
+      );
       try {
         const found = await searchPlaces(query, liveCoords ?? coords ?? undefined);
         setResults([...localMatches, ...found]);
@@ -458,7 +469,12 @@ export function HomeScreen() {
                       {r.placeAddress}
                     </Text>
                   </View>
-                  {r.zoneCrowdLevel && <CrowdBadge level={r.zoneCrowdLevel} />}
+                  {(r.zoneCrowdLevel || r.distanceKm != null) && (
+                    <View style={styles.resultRowSide}>
+                      {r.zoneCrowdLevel && <CrowdBadge level={r.zoneCrowdLevel} />}
+                      {r.distanceKm != null && <Text style={styles.resultDistance}>{formatDistance(r.distanceKm * 1000)}</Text>}
+                    </View>
+                  )}
                 </TouchableOpacity>
               ))}
             </View>
@@ -723,6 +739,8 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   resultRowMain: { flex: 1, minWidth: 0 },
+  resultRowSide: { alignItems: "flex-end", gap: 4 },
+  resultDistance: { fontFamily: fonts.bodyMedium, fontSize: 11.5, color: colors.muted },
   resultName: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.ink },
   resultAddress: { fontFamily: fonts.body, fontSize: 12, color: colors.muted, marginTop: 2 },
   badgeRow: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
