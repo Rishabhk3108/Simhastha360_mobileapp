@@ -1,10 +1,9 @@
 import { Image, StyleSheet, View } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { MapTrifold, Lifebuoy, Sparkle, UserCircle, ClipboardText, Bell, ChartBar } from "../components/icons";
+import { MapTrifold, Lifebuoy, UserCircle, ClipboardText, Bell, ChartBar } from "../components/icons";
 import { HomeScreen } from "../screens/HomeScreen";
 import { FindHelpScreen } from "../screens/FindHelpScreen";
 import { SafetyScreen } from "../screens/SafetyScreen";
-import { AIAssistantScreen } from "../screens/AIAssistantScreen";
 import { AccountScreen } from "../screens/AccountScreen";
 import { TasksScreen } from "../screens/TasksScreen";
 import { VolunteerHomeScreen } from "../screens/volunteer/VolunteerHomeScreen";
@@ -50,7 +49,6 @@ function VolunteerTabs() {
         <Tab.Screen name="Home" component={VolunteerHomeScreen} options={{ tabBarIcon: ({ color, size }) => <ClipboardText size={size} color={color} weight="fill" /> }} />
         <Tab.Screen name="Notifications" component={VolunteerNotificationsScreen} options={{ tabBarIcon: ({ color, size }) => <Bell size={size} color={color} /> }} />
         <Tab.Screen name="Stats" component={VolunteerStatsScreen} options={{ tabBarIcon: ({ color, size }) => <ChartBar size={size} color={color} /> }} />
-        <Tab.Screen name="Assistant" component={AIAssistantScreen} options={{ tabBarIcon: ({ color, size }) => <Sparkle size={size} color={color} weight="fill" /> }} />
         <Tab.Screen name="Profile" component={VolunteerProfileScreen} options={{ tabBarIcon: ({ color, size }) => <UserCircle size={size} color={color} /> }} />
       </Tab.Navigator>
       <SOSResponderOverlay />
@@ -68,7 +66,6 @@ function PilgrimTabs({ showTasksTab }: { showTasksTab: boolean }) {
         {showTasksTab && (
           <Tab.Screen name="Tasks" component={TasksScreen} options={{ tabBarIcon: ({ color, size }) => <ClipboardText size={size} color={color} weight="fill" /> }} />
         )}
-        <Tab.Screen name="Assistant" component={AIAssistantScreen} options={{ tabBarIcon: ({ color, size }) => <Sparkle size={size} color={color} weight="fill" /> }} />
         <Tab.Screen name="Account" component={AccountScreen} options={{ tabBarIcon: ({ color, size }) => <AccountTabIcon color={color} size={size} /> }} />
       </Tab.Navigator>
       {/* Field team members respond to reports, they don't file them - so the
