@@ -1,6 +1,6 @@
 export type CrowdLevel = "green" | "yellow" | "red";
 export type FacilityType = "medical" | "toilet" | "water" | "help_desk" | "parking";
-export type TaskStatus = "unassigned" | "acknowledged" | "in_progress" | "review" | "complete";
+export type TaskStatus = "unassigned" | "assigned" | "acknowledged" | "review" | "complete";
 
 export interface Zone {
   id: number;

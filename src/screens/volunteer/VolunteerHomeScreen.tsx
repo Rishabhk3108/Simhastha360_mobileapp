@@ -12,6 +12,7 @@ import { getMyVolunteerStatus, updateMyAvailability } from "../../api/volunteers
 import { api } from "../../api/client";
 import { useLocation } from "../../location/useLocation";
 import { colors, fonts } from "../../theme";
+import { STATUS_LABELS } from "../../utils/taskStatus";
 import type { Task } from "../../api/types";
 import type { VolunteerProfile } from "../../api/volunteers";
 
@@ -124,10 +125,10 @@ export function VolunteerHomeScreen() {
               <Text style={styles.metaText}>{t.points} pts</Text>
             </View>
           </View>
-          <Text style={styles.status}>{t.status.replace("_", " ")}</Text>
+          <Text style={styles.status}>{STATUS_LABELS[t.status]}</Text>
           {t.review_note && t.status === "acknowledged" && <Text style={styles.reviewNote}>Manager's note: {t.review_note}</Text>}
 
-          {t.status === "unassigned" && (
+          {t.status === "assigned" && (
             <TouchableOpacity style={styles.primaryButton} onPress={() => accept(t)} disabled={acceptingId === t.id}>
               {acceptingId === t.id ? (
                 <ActivityIndicator color={colors.surface} size="small" />

@@ -10,6 +10,7 @@ import { getMyTasks, acknowledgeTask } from "../api/tasks";
 import { api } from "../api/client";
 import { useLocation } from "../location/useLocation";
 import { colors, fonts } from "../theme";
+import { STATUS_LABELS } from "../utils/taskStatus";
 import type { Task } from "../api/types";
 
 const PRIORITY_COLOR: Record<Task["priority"], string> = { low: colors.green, medium: colors.yellow, high: colors.red };
@@ -87,9 +88,9 @@ export function TasksScreen() {
               <Text style={styles.metaText}>{t.points} pts</Text>
             </View>
           </View>
-          <Text style={styles.status}>{t.status.replace("_", " ")}</Text>
+          <Text style={styles.status}>{STATUS_LABELS[t.status]}</Text>
 
-          {t.status === "unassigned" && (
+          {t.status === "assigned" && (
             <TouchableOpacity style={styles.primaryButton} onPress={() => accept(t)} disabled={acceptingId === t.id}>
               {acceptingId === t.id ? (
                 <ActivityIndicator color={colors.surface} size="small" />
